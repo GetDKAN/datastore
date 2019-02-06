@@ -2,7 +2,7 @@
 
 namespace Dkan\Datastore;
 
-use Dkan\Datastore\Storage\KeyValue\Memory;
+use Dkan\Datastore\Storage\IKeyValue;
 
 class LockableBinStorage {
 
@@ -14,7 +14,7 @@ class LockableBinStorage {
   /**
    * LockableDrupalVariables constructor.
    */
-  public function __construct($bin_name, Locker $locker, Memory $key_value_store) {
+  public function __construct($bin_name, Locker $locker, IKeyValue $key_value_store) {
     $this->locker = $locker;
     $this->keyValueStorer = $key_value_store;
     $this->binName = $bin_name;

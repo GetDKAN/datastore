@@ -5,12 +5,12 @@ namespace Dkan\Datastore\Manager;
 use Dkan\Datastore\CsvParser;
 use Dkan\Datastore\LockableBinStorage;
 use Dkan\Datastore\Resource;
-use Dkan\Datastore\Storage\Database\Memory;
+use Dkan\Datastore\Storage\IDatabase;
 
 /**
  * Class Manager.
  */
-abstract class Manager implements ManagerInterface {
+abstract class Manager implements IManager {
 
   private $errors = [];
 
@@ -32,7 +32,7 @@ abstract class Manager implements ManagerInterface {
   /**
    * Constructor.
    */
-  public function __construct(Resource $resource, LockableBinStorage $bin_storage, Memory $database) {
+  public function __construct(Resource $resource, LockableBinStorage $bin_storage, IDatabase $database) {
     $this->database = $database;
 
     $this->binStorage = $bin_storage;

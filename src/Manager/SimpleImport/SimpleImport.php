@@ -3,7 +3,7 @@
 namespace Dkan\Datastore\Manager\SimpleImport;
 
 use Dkan\Datastore\Manager\Manager;
-use Dkan\Datastore\Manager\ManagerInterface;
+use Dkan\Datastore\Manager\IManager;
 use Dkan\Datastore\CsvParser;
 use Dkan\Datastore\Resource;
 use Dkan\Datastore\Storage\Database\Query\Insert;
@@ -52,7 +52,7 @@ class SimpleImport extends Manager {
         $counter = $this->getAndStore($parser, $query, $header, $counter, $start);
 
         if ($counter === FALSE) {
-          return ManagerInterface::DATA_IMPORT_ERROR;
+          return IManager::DATA_IMPORT_ERROR;
         }
       }
       else {
@@ -75,14 +75,14 @@ class SimpleImport extends Manager {
     }
     catch (\Exception $e) {
       $this->setError($e->getMessage());
-      return ManagerInterface::DATA_IMPORT_ERROR;
+      return IManager::DATA_IMPORT_ERROR;
     }
 
     if ($finished) {
-      return ManagerInterface::DATA_IMPORT_DONE;
+      return IManager::DATA_IMPORT_DONE;
     }
     else {
-      return ManagerInterface::DATA_IMPORT_PAUSED;
+      return IManager::DATA_IMPORT_PAUSED;
     }
   }
 

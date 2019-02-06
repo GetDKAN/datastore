@@ -2,7 +2,9 @@
 
 namespace Dkan\Datastore\Storage\KeyValue;
 
-class Memory {
+use Dkan\Datastore\Storage\IKeyValue;
+
+class Memory implements IKeyValue {
   private $storage = [];
 
   public function set($key, $value) {

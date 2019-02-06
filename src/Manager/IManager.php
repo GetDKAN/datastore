@@ -3,9 +3,9 @@
 namespace Dkan\Datastore\Manager;
 
 /**
- * Interface ManagerInterface.
+ * Interface IManager.
  */
-interface ManagerInterface {
+interface IManager {
 
   const STORAGE_UNINITIALIZED = 0;
   const STORAGE_INITIALIZED = 1;

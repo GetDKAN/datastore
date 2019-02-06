@@ -2,8 +2,9 @@
 namespace Dkan\Datastore\Storage\Database;
 
 use Dkan\Datastore\Storage\Database\Query\Insert;
+use Dkan\Datastore\Storage\IDatabase;
 
-class Memory {
+class Memory implements IDatabase {
   private $tables = [];
 
   public function tableExist($table_name) {

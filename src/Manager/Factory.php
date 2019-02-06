@@ -3,9 +3,8 @@
 namespace Dkan\Datastore\Manager;
 
 use Dkan\Datastore\LockableBinStorage;
-use Dkan\Datastore\LockableDrupalVariables;
 use Dkan\Datastore\Resource;
-use Dkan\Datastore\Storage\Database\Memory;
+use Dkan\Datastore\Storage\IDatabase;
 
 /**
  * Class Factory.
@@ -24,7 +23,7 @@ class Factory {
   /**
    * Constructor.
    */
-  public function __construct(Resource $resource, InfoProvider $provider, LockableBinStorage $bin_storage, Memory $database) {
+  public function __construct(Resource $resource, InfoProvider $provider, LockableBinStorage $bin_storage, IDatabase $database) {
     $this->binStorage = $bin_storage;
     $this->resource = $resource;
     $this->provider = $provider;
@@ -67,7 +66,7 @@ class Factory {
     }
 
     $interfaces = class_implements($class);
-    $interface = "Dkan\Datastore\Manager\ManagerInterface";
+    $interface = "Dkan\Datastore\Manager\IManager";
     if (!in_array($interface, $interfaces)) {
       throw new \Exception("The class {$class} does not implement the interface {$interface}.");
     }
