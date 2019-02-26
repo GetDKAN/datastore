@@ -13,6 +13,8 @@ use Dkan\Datastore\Storage\Database\Query\Insert;
  */
 class SimpleImport extends Manager {
 
+  private $query;
+
   /**
    * {@inheritdoc}
    */
@@ -30,9 +32,9 @@ class SimpleImport extends Manager {
     $number_of_items_imported = $this->numberOfRecordsImported();
     $start = ($number_of_items_imported > 0) ? $number_of_items_imported + 1 : 1;
 
-    $query = new Insert($this->getTableName());
+    $this->query = new Insert($this->getTableName());
     $header = $this->getTableHeaders();
-    $query->fields($header);
+    $this->query->fields($header);
 
     $counter = 0;
 
@@ -49,7 +51,7 @@ class SimpleImport extends Manager {
       }
       if (time() < $end) {
         $parser->feed($chunk);
-        $counter = $this->getAndStore($parser, $query, $header, $counter, $start);
+        $counter = $this->getAndStore($parser, $header, $counter, $start);
 
         if ($counter === FALSE) {
           return IManager::DATA_IMPORT_ERROR;
@@ -68,10 +70,10 @@ class SimpleImport extends Manager {
 
     // Flush the parser.
     $parser->finish();
-    $this->getAndStore($parser, $query, $header, $counter, $start);
+    $this->getAndStore($parser, $header, $counter, $start);
 
     try {
-      $this->database->insert($query);
+      $this->database->insert($this->query);
     }
     catch (\Exception $e) {
       $this->setError($e->getMessage());
@@ -96,13 +98,13 @@ class SimpleImport extends Manager {
   /**
    * Private method.
    */
-  private function getAndStore(CsvParser $parser, Insert $query, $header, $counter, $start) {
+  private function getAndStore(CsvParser $parser, $header, $counter, $start) {
     while ($record = $parser->getRecord()) {
       if ($counter >= $start) {
         $values = $record;
 
         if ($this->valuesAreValid($values, $header)) {
-          $query->values($values);
+          $this->query->values($values);
         }
         else {
           $this->setError("Invalid line {$counter} in {$this->getResource()->getFilePath()}");
@@ -111,14 +113,15 @@ class SimpleImport extends Manager {
 
         if ($counter % 1000 == 0) {
           try {
-            $this->database->insert($query);
+            $this->database->insert($this->query);
           }
           catch (\Exception $e) {
             $this->setError($e->getMessage());
             return FALSE;
           }
-          $query = new Insert($this->getTableName());
-          $query->fields($header);
+          unset($this->query);
+          $this->query = new Insert($this->getTableName());
+          $this->query->fields($header);
         }
       }
 
