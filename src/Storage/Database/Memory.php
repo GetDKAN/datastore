@@ -5,7 +5,7 @@ use Dkan\Datastore\Storage\Database\Query\Insert;
 use Dkan\Datastore\Storage\IDatabase;
 
 class Memory implements IDatabase {
-  private $tables = [];
+  public $tables = [];
 
   public function tableExist($table_name) {
     return isset($this->tables[$table_name]);
