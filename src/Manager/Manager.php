@@ -135,9 +135,9 @@ abstract class Manager implements IManager {
   }
 
   /**
-   * Private method.
+   * Get table schema.
    */
-  private function getTableSchema() {
+  public function getTableSchema() {
     $schema = [];
     $header = $this->getTableHeaders();
     foreach ($header as $field) {
