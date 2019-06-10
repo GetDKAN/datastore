@@ -142,8 +142,7 @@ abstract class Manager implements IManager {
     $header = $this->getTableHeaders();
     foreach ($header as $field) {
       $schema['fields'][$field] = [
-        'type' => "varchar",
-        'length' => 255,
+        'type' => "text",
       ];
     }
     return $schema;
