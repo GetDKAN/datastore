@@ -168,11 +168,19 @@ abstract class Manager implements IManager {
     fclose($h);
     $parser->reset();
 
+    $counter = 0;
     foreach ($headers as $key => $field) {
       $new = preg_replace("/[^A-Za-z0-9_ ]/", '', $field);
       $new = trim($new);
       $new = strtolower($new);
       $new = str_replace(" ", "_", $new);
+
+      if (strlen($new) >= 64) {
+        $strings = str_split($new, 59);
+        $new = $strings[0] . "_{$counter}";
+        $counter++;
+      }
+
       $header[$key] = $new;
     }
 
