@@ -2,7 +2,7 @@
 
 namespace Dkan\Datastore\Manager;
 
-use Dkan\Datastore\CsvParser;
+use CsvParser\Parser\Csv;
 use Dkan\Datastore\LockableBinStorage;
 use Dkan\Datastore\Resource;
 use Dkan\Datastore\Storage\IDatabase;
@@ -86,12 +86,12 @@ abstract class Manager implements IManager {
   /**
    * Get parser.
    *
-   * @return \Dkan\Datastore\CsvParser
+   * @return \CsvParser\Parser\Csv
    *   Parser object.
    */
   protected function getParser() {
     if (!$this->parser) {
-      $this->parser = new CsvParser(
+      $this->parser = new Csv(
         $this->configurableProperties['delimiter'],
         $this->configurableProperties['quote'],
         $this->configurableProperties['escape'],

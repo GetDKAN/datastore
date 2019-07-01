@@ -2,6 +2,7 @@
 
 use Dkan\Datastore\Manager\SimpleImport\SimpleImport;
 use Dkan\Datastore\Resource;
+use Locker\Locker;
 
 class SimpleImportTest extends \PHPUnit\Framework\TestCase {
 
@@ -20,7 +21,7 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
     $provider = new \Dkan\Datastore\Manager\InfoProvider();
     $provider->addInfo(new \Dkan\Datastore\Manager\Info(SimpleImport::class, "simple_import", "SimpleImport"));
 
-    $bin_storage = new \Dkan\Datastore\LockableBinStorage("dkan_datastore", new \Dkan\Datastore\Locker("dkan_datastore"), new \Dkan\Datastore\Storage\KeyValue\Memory());
+    $bin_storage = new \Dkan\Datastore\LockableBinStorage("dkan_datastore", new Locker("dkan_datastore"), new \Dkan\Datastore\Storage\KeyValue\Memory());
 
     $factory = new \Dkan\Datastore\Manager\Factory($resource, $provider, $bin_storage, $this->database);
 
@@ -28,7 +29,7 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
   }
 
   public function testBasics() {
-    $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+    $resource = new Resource(1, __DIR__ . "/../../data/countries.csv");
 
     /* @var $datastore \Dkan\Datastore\Manager\SimpleImport\SimpleImport */
     $datastore = $this->getDatastore($resource);
@@ -58,9 +59,8 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
   }
 
   public function testOver1000() {
-    $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
+    $resource = new Resource(1, __DIR__ . "/../../data/Bike_Lane.csv");
 
-    /* @var $datastore \Dkan\Datastore\Manager\SimpleImport\SimpleImport */
     $datastore = $this->getDatastore($resource);
     $datastore->import();
 
@@ -71,7 +71,6 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
 
     $expected = '["2048","75000402","R","1","DESIGNATED","0.769","1.713","1528.0913"]';
     $this->assertEquals($expected, $this->database->tables['dkan_datastore_1'][2968]);
-
   }
 
 }

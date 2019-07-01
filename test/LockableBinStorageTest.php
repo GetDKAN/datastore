@@ -1,11 +1,12 @@
 <?php
 
+use Locker\Locker;
 
 class LockableBinStorageTest extends \PHPUnit\Framework\TestCase
 {
   public function test() {
     $store = new \Dkan\Datastore\Storage\KeyValue\Memory();
-    $locker = new \Dkan\Datastore\Locker('test');
+    $locker = new Locker('test');
     $lockable = new \Dkan\Datastore\LockableBinStorage("test", $locker, $store);
 
     $lockable->set("1", "Hello World!!");
