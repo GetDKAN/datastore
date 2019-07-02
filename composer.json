@@ -13,7 +13,11 @@
             "Dkan\\Datastore\\": "src/"
         }
     },
-    "require": {},
+    "require": {
+        "fmizzell/csv-parser": "1.0.3",
+        "fmizzell/locker": "1.0.0",
+        "fmizzell/contracts": "0.0.2"
+    },
     "require-dev": {
         "phpunit/phpunit": "^7.4"
     }

@@ -4,7 +4,7 @@ namespace Dkan\Datastore\Manager\SimpleImport;
 
 use Dkan\Datastore\Manager\Manager;
 use Dkan\Datastore\Manager\IManager;
-use Dkan\Datastore\CsvParser;
+use CsvParser\Parser\Csv;
 use Dkan\Datastore\Resource;
 use Dkan\Datastore\Storage\Database\Query\Insert;
 
@@ -98,7 +98,7 @@ class SimpleImport extends Manager {
   /**
    * Private method.
    */
-  private function getAndStore(CsvParser $parser, $header, $counter, $start) {
+  private function getAndStore(Csv $parser, $header, $counter, $start) {
     while ($record = $parser->getRecord()) {
       if ($counter >= $start) {
         $values = $record;

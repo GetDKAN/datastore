@@ -3,6 +3,7 @@
 namespace Dkan\Datastore;
 
 use Dkan\Datastore\Storage\IKeyValue;
+use Locker\Locker;
 
 class LockableBinStorage {
 
