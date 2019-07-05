@@ -3,6 +3,7 @@
 namespace Dkan\Datastore;
 
 use Contracts\Parser;
+use Contracts\Schemed;
 use Dkan\Datastore\Storage\Storage;
 
 class Manager
@@ -91,12 +92,52 @@ class Manager
       if ($this->recordNumber != 0) {
         $this->storage->store(json_encode($record), $this->recordNumber);
       }
+      else {
+        $this->schemeStorage($record);
+      }
       $this->recordNumber++;
     }
   }
 
   public function getStatus() {
     return $this->status;
+  }
+
+  private function schemeStorage($header) {
+    if ($this->storage instanceof Schemed) {
+      $this->storage->setSchema($this->getTableSchema($header));
+    }
+  }
+
+  private function getTableSchema($header) {
+    $counter = 0;
+    foreach ($header as $key => $field) {
+      $new = preg_replace("/[^A-Za-z0-9_ ]/", '', $field);
+      $new = trim($new);
+      $new = strtolower($new);
+      $new = str_replace(" ", "_", $new);
+
+      if (strlen($new) >= 64) {
+        $strings = str_split($new, 59);
+        $new = $strings[0] . "_{$counter}";
+        $counter++;
+      }
+
+      $header[$key] = $new;
+    }
+
+    $schema = [];
+    foreach ($header as $field) {
+      $schema['fields'][$field] = [
+        'type' => "text",
+      ];
+    }
+    return $schema;
+  }
+
+  public function getParser(): Parser
+  {
+    return $this->parser;
   }
 
 }
