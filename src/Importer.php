@@ -5,8 +5,10 @@ namespace Dkan\Datastore;
 use Contracts\Parser;
 use Contracts\Schemed;
 use Dkan\Datastore\Storage\Storage;
+use Procrastinator\Job\Job;
+use Procrastinator\Result;
 
-class Manager
+class Importer extends Job implements \JsonSerializable
 {
   const DATA_IMPORT_UNINITIALIZED = 1;
   const DATA_IMPORT_READY = 2;
@@ -27,6 +29,8 @@ class Manager
 
   public function __construct(Resource $resource, Storage $storage, Parser $parser)
   {
+    parent::__construct();
+
     $this->storage = $storage;
     $this->parser = $parser;
     $this->resource = $resource;
@@ -47,11 +51,11 @@ class Manager
   /**
    * {@inheritdoc}
    */
-
-  public function import() {
+  public function runIt() {
     $maximum_execution_time = isset($this->timeLimit) ? (time() + $this->timeLimit) : PHP_INT_MAX;
 
     $h = fopen($this->resource->getFilePath(), 'r');
+    $result = $this->getResult();
 
     while (time() < $maximum_execution_time) {
       $chunk = fread($h, 32);
@@ -63,9 +67,11 @@ class Manager
       try {
         $this->parser->feed($chunk);
         $this->numberOfChunksProcessed++;
+        $result->setStatus(Result::DONE);
       }
-      catch(\Exception $e) {}
-
+      catch(\Exception $e) {
+        $result->setStatus(Result::STOPPED);
+      }
       $this->store();
     }
 
@@ -75,7 +81,7 @@ class Manager
     $this->parser->finish();
     $this->store();
 
-    $this->status['data_import'] = self::DATA_IMPORT_DONE;
+    return $result;
   }
 
   public function drop() {
@@ -97,10 +103,6 @@ class Manager
       }
       $this->recordNumber++;
     }
-  }
-
-  public function getStatus() {
-    return $this->status;
   }
 
   private function schemeStorage($header) {
@@ -138,6 +140,21 @@ class Manager
   public function getParser(): Parser
   {
     return $this->parser;
+  }
+
+  public function getState() 
+  {
+    return (array) json_decode($this->getResult()->getData());
+  }
+
+  public function getStateProperty($property) 
+  {
+    return $this->getState()[$property];
+  }
+
+  private function setState($state) 
+  {
+    $this->getResult()->setData(json_encode($state));
   }
 
 }
