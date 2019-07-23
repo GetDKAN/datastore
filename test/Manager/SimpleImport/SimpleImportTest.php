@@ -3,21 +3,23 @@
 use Contracts\Mock\Storage\Memory;
 use Dkan\Datastore\Resource;
 use Locker\Locker;
-
-class SimpleImport2Test extends \PHPUnit\Framework\TestCase {
+use Procrastinator\Job\Job;
+use Procrastinator\Result;
+  
+class SimpleImportTest extends \PHPUnit\Framework\TestCase {
 
   private $database;
 
   /**
    * This method is called before each test.
    */
-  protected function setUp()
+  protected function setUp(): void
   {
     $this->database = new TestMemStorage2();
   }
 
   private function getDatastore(Resource $resource) {
-    return new \Dkan\Datastore\Manager($resource, $this->database, \CsvParser\Parser\Csv::getParser());
+    return new \Dkan\Datastore\Importer($resource, $this->database, \CsvParser\Parser\Csv::getParser());
   }
 
   public function testBasics() {
@@ -25,8 +27,7 @@ class SimpleImport2Test extends \PHPUnit\Framework\TestCase {
 
     $datastore = $this->getDatastore($resource);
 
-    $status = $datastore->getStatus();
-    $this->assertEquals($datastore::DATA_IMPORT_UNINITIALIZED, $status['data_import']);
+    $this->assertEquals(Result::UNINITIALIZED, $datastore->getStatus());
 
     $datastore->import();
 
@@ -48,7 +49,7 @@ class SimpleImport2Test extends \PHPUnit\Framework\TestCase {
     $resource = new Resource(1, __DIR__ . "/../../data/Bike_Lane.csv");
 
     $datastore = $this->getDatastore($resource);
-    $datastore->import();
+    $datastore->runIt();
 
     $this->assertEquals(2969, $datastore->getStorage()->count());
 

@@ -7,8 +7,8 @@ class ManagerTest extends \PHPUnit\Framework\TestCase
     $resource = new Resource(1, __DIR__ . "/data/countries.csv");
     $storage = new TestMemStorage();
 
-    $datastore = new \Dkan\Datastore\Manager($resource, $storage,\CsvParser\Parser\Csv::getParser());
-    $datastore->import();
+    $datastore = new \Dkan\Datastore\Importer($resource, $storage,\CsvParser\Parser\Csv::getParser());
+    $datastore->runIt();
 
     $this->assertEquals(4, $storage->count());
   }
