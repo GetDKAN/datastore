@@ -10,13 +10,6 @@ use Procrastinator\Result;
 
 class Importer extends Job implements \JsonSerializable
 {
-  const DATA_IMPORT_UNINITIALIZED = 1;
-  const DATA_IMPORT_READY = 2;
-  const DATA_IMPORT_IN_PROGRESS = 3;
-  const DATA_IMPORT_PAUSED = 4;
-  const DATA_IMPORT_DONE = 5;
-  const DATA_IMPORT_ERROR = 6;
-
   private $storage;
   private $parser;
   private $resource;
@@ -25,7 +18,6 @@ class Importer extends Job implements \JsonSerializable
   private $numberOfChunksProcessed = 0;
   private $recordNumber = 0;
   private $timeLimit;
-  private $status = ['data_import' => self::DATA_IMPORT_UNINITIALIZED];
 
   public function __construct(Resource $resource, Storage $storage, Parser $parser)
   {
@@ -34,6 +26,8 @@ class Importer extends Job implements \JsonSerializable
     $this->storage = $storage;
     $this->parser = $parser;
     $this->resource = $resource;
+
+    $this->setState(Result::UNINITIALIZED);
   }
 
   public function setTimeLimit(int $seconds) {
@@ -73,6 +67,7 @@ class Importer extends Job implements \JsonSerializable
         $result->setStatus(Result::STOPPED);
       }
       $this->store();
+      $this->setStateProperty('chunks_processed', $this->numberOfChunksProcessed++);
     }
 
     fclose($h);
@@ -89,7 +84,7 @@ class Importer extends Job implements \JsonSerializable
     foreach ($results as $id => $data) {
       $this->storage->remove($id);
     }
-    $this->status['data_import'] = self::DATA_IMPORT_UNINITIALIZED;
+    $result->setStatus(Result::UNINITIALIZED);
   }
 
   private function store() {
