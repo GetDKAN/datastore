@@ -27,7 +27,7 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
 
     $datastore = $this->getDatastore($resource);
 
-    $this->assertEquals(Result::UNINITIALIZED, $datastore->getStatus());
+    $this->assertEquals(Result::UNINITIALIZED, $datastore->getResult()->getStatus());
 
     $datastore->import();
 
