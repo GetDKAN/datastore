@@ -7,7 +7,7 @@ class ManagerTest extends \PHPUnit\Framework\TestCase
     $resource = new Resource(1, __DIR__ . "/data/countries.csv");
     $storage = new TestMemStorage();
 
-    $datastore = new \Dkan\Datastore\Importer($resource, $storage,\CsvParser\Parser\Csv::getParser());
+    $datastore = new \Dkan\Datastore\Importer($resource, $storage, \CsvParser\Parser\Csv::getParser());
     $datastore->runIt();
 
     $this->assertEquals(4, $storage->count());
@@ -15,7 +15,8 @@ class ManagerTest extends \PHPUnit\Framework\TestCase
 
 }
 
-class TestMemStorage extends Contracts\Mock\Storage\Memory implements \Dkan\Datastore\Storage\Storage {
+class TestMemStorage extends Contracts\Mock\Storage\Memory implements \Dkan\Datastore\Storage\Storage 
+{
   public function count(): int
   {
     return count($this->storage);
