@@ -5,6 +5,7 @@ namespace Dkan\Datastore;
 use Contracts\Parser;
 use Contracts\Schemed;
 use Dkan\Datastore\Storage\Storage;
+use Dkan\Datastore\Storage\TabularInterface;
 use Procrastinator\Job\Job;
 use Procrastinator\Result;
 
@@ -90,7 +91,7 @@ class Importer extends Job
   }
 
   private function setStorageSchema($header) {
-    if ($this->storage instanceof Schemed) {
+    if ($this->storage instanceof TabularInterface) {
       $this->storage->setSchema($this->getTableSchema($header));
     }
   }
