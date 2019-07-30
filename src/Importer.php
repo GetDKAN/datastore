@@ -8,7 +8,7 @@ use Dkan\Datastore\Storage\Storage;
 use Procrastinator\Job\Job;
 use Procrastinator\Result;
 
-class Importer extends Job implements \JsonSerializable
+class Importer extends Job
 {
   private $storage;
   private $parser;
@@ -26,18 +26,8 @@ class Importer extends Job implements \JsonSerializable
     $this->storage = $storage;
     $this->parser = $parser;
     $this->resource = $resource;
-
-    $this->setState(Result::UNINITIALIZED);
   }
-
-  public function setTimeLimit(int $seconds) {
-    $this->timeLimit = $seconds;
-  }
-
-  public function unsetTimeLimit() {
-    unset($this->timeLimit);
-  }
-
+  
   public function getStorage() {
     return $this->storage;
   }
@@ -94,13 +84,13 @@ class Importer extends Job implements \JsonSerializable
         $this->storage->store(json_encode($record), $this->recordNumber);
       }
       else {
-        $this->schemeStorage($record);
+        $this->setStorageSchema($record);
       }
       $this->recordNumber++;
     }
   }
 
-  private function schemeStorage($header) {
+  private function setStorageSchema($header) {
     if ($this->storage instanceof Schemed) {
       $this->storage->setSchema($this->getTableSchema($header));
     }
@@ -135,21 +125,6 @@ class Importer extends Job implements \JsonSerializable
   public function getParser(): Parser
   {
     return $this->parser;
-  }
-
-  public function getState() 
-  {
-    return (array) json_decode($this->getResult()->getData());
-  }
-
-  public function getStateProperty($property) 
-  {
-    return $this->getState()[$property];
-  }
-
-  private function setState($state) 
-  {
-    $this->getResult()->setData(json_encode($state));
   }
 
 }
