@@ -74,7 +74,7 @@ class Importer extends Job
     foreach ($results as $id => $data) {
       $this->storage->remove($id);
     }
-    $result->setStatus(Result::UNINITIALIZED);
+    $this->getResult()->setStatus(Result::STOPPED);
   }
 
   private function store() {
