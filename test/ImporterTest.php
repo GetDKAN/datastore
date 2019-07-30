@@ -42,6 +42,14 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
     $this->assertEquals(Result::STOPPED, $status);
   }
 
+  public function testError() {
+    $resource = new Resource(1, __DIR__ . "/data/fake.csv");
+    $datastore = $this->getDatastore($resource);
+    $datastore->runIt();
+
+    $this->assertEquals(Result::ERROR, $datastore->getResult()->getStatus());
+  }
+
   public function testOver1000() {
     $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
 
