@@ -1,7 +1,10 @@
 <?php
 
-use Contracts\Mock\Storage\Memory;
+use Dkan\Datastore\Storage\Storage;
+use Dkan\Datastore\Storage\TabularInterface;
 use Dkan\Datastore\Resource;
+use Dkan\Datastore\Importer;
+use Contracts\Mock\Storage\Memory;
 use Locker\Locker;
 use Procrastinator\Job\Job;
 use Procrastinator\Result;
@@ -16,10 +19,11 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
   protected function setUp(): void
   {
     $this->database = new TestMemStorage();
+    $this->assertTrue($this->database instanceof TabularInterface);
   }
 
   private function getDatastore(Resource $resource) {
-    return new \Dkan\Datastore\Importer($resource, $this->database, \CsvParser\Parser\Csv::getParser());
+    return new Importer($resource, $this->database, \CsvParser\Parser\Csv::getParser());
   }
 
   public function testBasics() {
@@ -27,6 +31,7 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
 
     $datastore = $this->getDatastore($resource);
 
+    $this->assertTrue($datastore->getParser() instanceof \Contracts\Parser);
     $this->assertEquals(Result::STOPPED, $datastore->getResult()->getStatus());
 
     $datastore->runIt();
@@ -69,9 +74,13 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
   }
 }
 
-class TestMemStorage extends Contracts\Mock\Storage\Memory implements \Dkan\Datastore\Storage\Storage {
+class TestMemStorage extends Memory implements Storage, TabularInterface {
   public function count(): int
   {
     return count($this->storage);
+  }
+
+  public function setSchema($schema) {
+    $this->schema = $schema;
   }
 }
