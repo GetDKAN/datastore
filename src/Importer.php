@@ -37,30 +37,29 @@ class Importer extends Job
    */
   public function runIt() {
     $maximum_execution_time = isset($this->timeLimit) ? (time() + $this->timeLimit) : PHP_INT_MAX;
-
-    $h = fopen($this->resource->getFilePath(), 'r');
     $result = $this->getResult();
 
-    while (time() < $maximum_execution_time) {
-      $chunk = fread($h, 32);
-
-      if (!$chunk) {
-        break;
-      }
-
-      try {
+    try {
+      $h = fopen($this->resource->getFilePath(), 'r');
+      while (time() < $maximum_execution_time) {
+        $chunk = fread($h, 32);
+  
+        if (!$chunk) {
+          break;
+        }
         $this->parser->feed($chunk);
         $this->numberOfChunksProcessed++;
         $result->setStatus(Result::DONE);
-      }
-      catch(\Exception $e) {
-        $result->setStatus(Result::STOPPED);
-      }
-      $this->store();
-      $this->setStateProperty('chunks_processed', $this->numberOfChunksProcessed++);
-    }
 
-    fclose($h);
+        $this->store();
+        $this->setStateProperty('chunks_processed', $this->numberOfChunksProcessed++);
+      }
+  
+      fclose($h);
+    }
+    catch(\Exception $e) {
+      $result->setStatus(Result::ERROR);
+    }
 
     // Flush the parser.
     $this->parser->finish();
