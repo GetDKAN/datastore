@@ -1,5 +1,5 @@
 {
-    "name": "fmizzell/datastore",
+    "name": "getdkan/datastore",
     "description": "A Drupal-independent version of DKAN's datastore.",
     "license": "GPL-3.0-only",
     "authors": [
