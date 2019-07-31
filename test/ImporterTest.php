@@ -1,11 +1,10 @@
 <?php
 
-namespace Dkan\Datastore\Test;
+namespace Dkan\DatastoreTest;
 
-use Dkan\Datastore\Storage\StorageInterface;
 use Dkan\Datastore\Resource;
 use Dkan\Datastore\Importer;
-use Contracts\Mock\Storage\Memory;
+use Dkan\Datastore\Storage\StorageInterface;
 use Procrastinator\Result;
 use PHPUnit\Framework\TestCase;
 
@@ -108,16 +107,5 @@ class ImporterTest extends TestCase
 
         $expected = '["2048","75000402","R","1","DESIGNATED","0.769","1.713","1528.0913"]';
         $this->assertEquals($expected, $values[2968]);
-    }
-}
-
-class TestMemStorage extends Memory implements StorageInterface
-{
-
-    use Dkan\Datastore\Storage\Database\SqlStorageTrait;
-
-    public function count(): int
-    {
-        return count($this->storage);
     }
 }

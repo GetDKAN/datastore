@@ -10,7 +10,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "Dkan\\Datastore\\": "src/"
+            "Dkan\\Datastore\\": "src/",
+            "Dkan\\DatastoreTest\\": "test/"
         }
     },
     "require": {
