@@ -51,12 +51,38 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
     $this->assertEquals(Result::STOPPED, $status);
   }
 
-  public function testError() {
+  public function testError() 
+  {
     $resource = new Resource(1, __DIR__ . "/data/fake.csv");
     $datastore = $this->getDatastore($resource);
     $datastore->runIt();
 
     $this->assertEquals(Result::ERROR, $datastore->getResult()->getStatus());
+  }
+
+  public function testLongColumnName() 
+  {
+    $resource = new Resource(1, __DIR__ . "/data/longcolumn.csv");
+    $datastore = $this->getDatastore($resource);
+    $truncatedLongFieldName = 'extra_long_column_name_with_tons_of_characters_that_will_ne_0';
+    
+    $datastore->runIt();
+    $schema = $datastore->getStorage()->getSchema();
+    $fields = array_keys($schema['fields']);
+    
+    $this->assertEquals($truncatedLongFieldName, $fields[2]);
+  }
+
+  public function testColumnNameSpaces() 
+  {
+    $resource = new Resource(1, __DIR__ . "/data/columnspaces.csv");
+    $datastore = $this->getDatastore($resource);
+    $noMoreSpaces = 'column_name_with_spaces_in_it';
+    
+    $datastore->runIt();
+    $schema = $datastore->getStorage()->getSchema();
+    $fields = array_keys($schema['fields']);
+    $this->assertEquals($noMoreSpaces, $fields[2]);
   }
 
   public function testOver1000() {
