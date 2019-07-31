@@ -1,6 +1,6 @@
 <?php
 
-use Dkan\Datastore\Storage\Storage;
+use Dkan\Datastore\Storage\StorageInterface;
 use Dkan\Datastore\Storage\TabularInterface;
 use Dkan\Datastore\Resource;
 use Dkan\Datastore\Importer;
@@ -19,7 +19,7 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
   protected function setUp(): void
   {
     $this->database = new TestMemStorage();
-    $this->assertTrue($this->database instanceof TabularInterface);
+    $this->assertTrue($this->database instanceof StorageInterface);
   }
 
   private function getDatastore(Resource $resource) {
@@ -28,6 +28,7 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
 
   public function testBasics() {
     $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+    $this->assertEquals($resource->getID(), 1);
 
     $datastore = $this->getDatastore($resource);
 
@@ -35,6 +36,9 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
     $this->assertEquals(Result::STOPPED, $datastore->getResult()->getStatus());
 
     $datastore->runIt();
+
+    $schema = $datastore->getStorage()->getSchema();
+    $this->assertTrue(is_array($schema['fields']));
 
     $status = $datastore->getResult()->getStatus();
     $this->assertEquals(Result::DONE, $status);
@@ -74,13 +78,12 @@ class SimpleImportTest extends \PHPUnit\Framework\TestCase {
   }
 }
 
-class TestMemStorage extends Memory implements Storage, TabularInterface {
+class TestMemStorage extends Memory implements StorageInterface {
+
+  use Dkan\Datastore\Storage\Database\SqlStorageTrait; 
+
   public function count(): int
   {
     return count($this->storage);
-  }
-
-  public function setSchema($schema) {
-    $this->schema = $schema;
   }
 }
