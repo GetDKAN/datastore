@@ -5,31 +5,34 @@ namespace Dkan\Datastore;
 /**
  * Class Resource.
  */
-class Resource {
+class Resource
+{
 
-  private $id;
-  private $filePath;
+    private $id;
+    private $filePath;
 
   /**
    * Resource constructor.
    */
-  public function __construct($id, $file_path) {
-    $this->id = $id;
-    $this->filePath = $file_path;
-  }
+    public function __construct($id, $file_path)
+    {
+        $this->id = $id;
+        $this->filePath = $file_path;
+    }
 
   /**
    * Getter.
    */
-  public function getId() {
-    return $this->id;
-  }
+    public function getId()
+    {
+        return $this->id;
+    }
 
   /**
    * Getter.
    */
-  public function getFilePath() {
-    return $this->filePath;
-  }
-
+    public function getFilePath()
+    {
+        return $this->filePath;
+    }
 }
