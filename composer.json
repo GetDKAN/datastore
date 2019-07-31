@@ -15,11 +15,11 @@
         }
     },
     "require": {
-        "fmizzell/csv-parser": ">=1.0.4",
-        "fmizzell/locker": ">=1.0.0",
-        "fmizzell/contracts": ">=0.0.3",
+        "fmizzell/csv-parser": "~1.0.4",
+        "fmizzell/locker": "~1.0.0",
+        "fmizzell/contracts": "~0.1.0",
         "phpunit/phpunit": "^8.2",
-        "getdkan/procrastinator": ">=1.0.1"
+        "getdkan/procrastinator": "~1.0.2"
     },
     "require-dev": {
     }
