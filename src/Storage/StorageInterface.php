@@ -3,14 +3,14 @@
 
 namespace Dkan\Datastore\Storage;
 
-use Contracts\BulkRetriever;
-use Contracts\Countable;
+use Contracts\BulkRetrieverInterface;
+use Contracts\CountableInterface;
 use Contracts\StorerInterface;
 
 interface StorageInterface extends
     StorerInterface,
-    Countable,
-    BulkRetriever
+    CountableInterface,
+    BulkRetrieverInterface
 {
     public function setSchema($schema);
 

@@ -37,7 +37,7 @@ class ImporterTest extends TestCase
 
         $datastore = $this->getDatastore($resource);
 
-        $this->assertTrue($datastore->getParser() instanceof \Contracts\Parser);
+        $this->assertTrue($datastore->getParser() instanceof \Contracts\ParserInterface);
         $this->assertEquals(Result::STOPPED, $datastore->getResult()->getStatus());
 
         $datastore->runIt();

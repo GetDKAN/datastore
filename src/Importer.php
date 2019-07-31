@@ -2,7 +2,7 @@
 
 namespace Dkan\Datastore;
 
-use Contracts\Parser;
+use Contracts\ParserInterface;
 use Contracts\Schemed;
 use Dkan\Datastore\Storage\StorageInterface;
 use Procrastinator\Job\Job;
@@ -19,7 +19,7 @@ class Importer extends Job
     private $recordNumber = 0;
     private $timeLimit;
 
-    public function __construct(Resource $resource, StorageInterface $storage, Parser $parser)
+    public function __construct(Resource $resource, StorageInterface $storage, ParserInterface $parser)
     {
         parent::__construct();
 
@@ -102,7 +102,7 @@ class Importer extends Job
         $this->storage->setSchema($schema);
     }
 
-    public function getParser(): Parser
+    public function getParser(): ParserInterface
     {
         return $this->parser;
     }
