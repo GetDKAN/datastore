@@ -7,13 +7,12 @@ use Contracts\BulkRetriever;
 use Contracts\Countable;
 use Contracts\StorerInterface;
 
-interface StorageInterface extends 
-    StorerInterface, 
-    Countable, 
+interface StorageInterface extends
+    StorerInterface,
+    Countable,
     BulkRetriever
 {
     public function setSchema($schema);
 
     public function getSchema();
-  
 }
