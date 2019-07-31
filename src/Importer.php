@@ -4,8 +4,7 @@ namespace Dkan\Datastore;
 
 use Contracts\Parser;
 use Contracts\Schemed;
-use Dkan\Datastore\Storage\Storage;
-use Dkan\Datastore\Storage\TabularInterface;
+use Dkan\Datastore\Storage\StorageInterface;
 use Procrastinator\Job\Job;
 use Procrastinator\Result;
 
@@ -20,7 +19,7 @@ class Importer extends Job
   private $recordNumber = 0;
   private $timeLimit;
 
-  public function __construct(Resource $resource, Storage $storage, Parser $parser)
+  public function __construct(Resource $resource, StorageInterface $storage, Parser $parser)
   {
     parent::__construct();
 
@@ -90,36 +89,15 @@ class Importer extends Job
     }
   }
 
-  private function setStorageSchema($header) {
-    if ($this->storage instanceof TabularInterface) {
-      $this->storage->setSchema($this->getTableSchema($header));
-    }
-  }
-
-  private function getTableSchema($header) {
-    $counter = 0;
-    foreach ($header as $key => $field) {
-      $new = preg_replace("/[^A-Za-z0-9_ ]/", '', $field);
-      $new = trim($new);
-      $new = strtolower($new);
-      $new = str_replace(" ", "_", $new);
-
-      if (strlen($new) >= 64) {
-        $strings = str_split($new, 59);
-        $new = $strings[0] . "_{$counter}";
-        $counter++;
-      }
-
-      $header[$key] = $new;
-    }
-
+  private function setStorageSchema($header) 
+  {
     $schema = [];
     foreach ($header as $field) {
       $schema['fields'][$field] = [
         'type' => "text",
       ];
     }
-    return $schema;
+    $this->storage->setSchema($schema);
   }
 
   public function getParser(): Parser
