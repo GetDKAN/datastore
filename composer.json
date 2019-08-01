@@ -15,9 +15,9 @@
         }
     },
     "require": {
-        "fmizzell/csv-parser": "~1.0.6",
-        "fmizzell/locker": "~1.0.0",
-        "fmizzell/contracts": "~0.1.0",
+        "getdkan/csv-parser": "~1.0.6",
+        "getdkan/locker": "~1.0.0",
+        "getdkan/contracts": "~0.1.0",
         "getdkan/procrastinator": "~1.0.2"
     },
     "require-dev": {
