@@ -43,6 +43,7 @@ class Importer extends Job
                 $chunk = fread($h, 32);
                 if (!$chunk) {
                     $result->setStatus(Result::DONE);
+                    $this->parser->finish();
                     break;
                 }
                 $this->parser->feed($chunk);
@@ -59,7 +60,6 @@ class Importer extends Job
         }
 
       // Flush the parser.
-        $this->parser->finish();
         $this->store();
 
         return $result;
