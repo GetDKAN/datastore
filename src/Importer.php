@@ -38,14 +38,12 @@ class Importer extends Job
         $result = $this->getResult();
         try {
             $h = fopen($this->resource->getFilePath(), 'r');
-            print "\nNumChunks: " . $chunksProcessed;
             fseek($h, ($chunksProcessed)*32);
             while (time() < $maximum_execution_time) {
                 $chunk = fread($h, 32);
-                print "\nCHUNK: $chunk\n";
                 if (!$chunk) {
                     $result->setStatus(Result::DONE);
-                    // break;
+                    break;
                 }
                 $this->parser->feed($chunk);
                 $chunksProcessed++;
@@ -54,11 +52,11 @@ class Importer extends Job
                 $this->store();
                 $this->setStateProperty('chunksProcessed', $chunksProcessed);
             }
-            // print "\nCHUNK END: $chunk\n";
 
             fclose($h);
         } catch (\Exception $e) {
             $result->setStatus(Result::ERROR);
+            throw $e;
         }
 
       // Flush the parser.
