@@ -105,7 +105,6 @@ class ImporterTest extends TestCase
 
         $this->assertEquals(Result::DONE, $datastore2->getResult()->getStatus());
         $this->assertEquals($timeLimit, $datastore2->getTimeLimit());
-        $this->assertEquals(Result::DONE, $datastore2->getResult()->getStatus());
     }
 
     public function testMultiplePasses()

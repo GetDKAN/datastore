@@ -79,7 +79,7 @@ class Importer extends Job
 
     private function store()
     {
-        $recordNumber = $this->getStateProperty('currentRecord', 0);
+        $recordNumber = $this->getStateProperty('recordNumber', 0);
         while ($record = $this->parser->getRecord()) {
           // Skip the first record. It is the header.
             if ($recordNumber != 0) {
@@ -89,7 +89,7 @@ class Importer extends Job
             }
             $recordNumber++;
         }
-        $this->setStateProperty('currentRecord', $recordNumber);
+        $this->setStateProperty('recordNumber', $recordNumber);
     }
 
     private function setStorageSchema($header)
