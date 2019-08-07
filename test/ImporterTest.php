@@ -113,7 +113,7 @@ class ImporterTest extends TestCase
         $datastore = $this->getDatastore($resource);
 
         $data = $datastore->jsonSerialize();
-        $data->parserClass = 'BadParser';
+        $data->parserClass = 'InvalidParser';
         $json = json_encode($data);
 
         $this->expectException(\Exception::class);
