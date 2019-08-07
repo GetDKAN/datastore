@@ -14,10 +14,6 @@ class Importer extends Job
     private $parser;
     private $resource;
 
-  // State.
-    private $numberOfChunksProcessed = 0;
-    private $recordNumber = 0;
-
     public function __construct(Resource $resource, StorageInterface $storage, ParserInterface $parser)
     {
         parent::__construct();
@@ -37,12 +33,13 @@ class Importer extends Job
    */
     public function runIt()
     {
+        $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
         $result = $this->getResult();
         try {
             $h = fopen($this->resource->getFilePath(), 'r');
-            print "\nNumChunks: " . $this->numberOfChunksProcessed;
-            fseek($h, ($this->numberOfChunksProcessed)*32);
+            print "\nNumChunks: " . $chunksProcessed;
+            fseek($h, ($chunksProcessed)*32);
             while (time() < $maximum_execution_time) {
                 $chunk = fread($h, 32);
                 print "\nCHUNK: $chunk\n";
@@ -51,11 +48,11 @@ class Importer extends Job
                     // break;
                 }
                 $this->parser->feed($chunk);
-                $this->numberOfChunksProcessed++;
+                $chunksProcessed++;
                 $result->setStatus(Result::STOPPED);
 
                 $this->store();
-                $this->setStateProperty('chunks_processed', $this->numberOfChunksProcessed);
+                $this->setStateProperty('chunksProcessed', $chunksProcessed);
             }
             // print "\nCHUNK END: $chunk\n";
 
@@ -82,15 +79,17 @@ class Importer extends Job
 
     private function store()
     {
+        $recordNumber = $this->getStateProperty('currentRecord', 0);
         while ($record = $this->parser->getRecord()) {
           // Skip the first record. It is the header.
-            if ($this->recordNumber != 0) {
-                $this->storage->store(json_encode($record), $this->recordNumber);
+            if ($recordNumber != 0) {
+                $this->storage->store(json_encode($record), $recordNumber);
             } else {
                 $this->setStorageSchema($record);
             }
-            $this->recordNumber++;
+            $recordNumber++;
         }
+        $this->setStateProperty('currentRecord', $recordNumber);
     }
 
     private function setStorageSchema($header)
@@ -113,8 +112,6 @@ class Importer extends Job
     {
         return (object) [
             'timeLimit' => $this->getTimeLimit(),
-            'numberOfChunksProcessed' => $this->numberOfChunksProcessed,
-            'recordNumber' => $this->recordNumber,
             'result' => $this->getResult()->jsonSerialize(),
             'parser' => $this->getParser()->jsonSerialize(),
             'parserClass' => get_class($this->getParser()),
@@ -143,14 +140,6 @@ class Importer extends Job
         $p = $reflector->getParentClass()->getProperty('result');
         $p->setAccessible(true);
         $p->setValue($object, Result::hydrate(json_encode($data->result)));
-
-        $p = $reflector->getProperty('numberOfChunksProcessed');
-        $p->setAccessible(true);
-        $p->setValue($object, $data->numberOfChunksProcessed);
-
-        $p = $reflector->getProperty('recordNumber');
-        $p->setAccessible(true);
-        $p->setValue($object, $data->recordNumber);
 
         if (class_exists($data->parserClass) && method_exists($data->parserClass, 'hydrate')) {
             $p = $reflector->getProperty('parser');
