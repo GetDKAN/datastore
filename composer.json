@@ -31,6 +31,6 @@
         "getdkan/csv-parser": "~1.1.0",
         "getdkan/locker": "~1.1.0",
         "getdkan/contracts": "~0.1.0",
-        "getdkan/procrastinator": "dev-serialization-tests"
+        "getdkan/procrastinator": "~1.0.4"
     }
 }
