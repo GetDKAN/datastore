@@ -56,7 +56,6 @@ class Importer extends Job
             fclose($h);
         } catch (\Exception $e) {
             $result->setStatus(Result::ERROR);
-            throw $e;
         }
 
       // Flush the parser.
