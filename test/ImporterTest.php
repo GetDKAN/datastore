@@ -70,11 +70,11 @@ class ImporterTest extends TestCase
         $resource = new Resource(1, __DIR__ . "/data/longcolumn.csv");
         $datastore = $this->getDatastore($resource);
         $truncatedLongFieldName = 'extra_long_column_name_with_tons_of_characters_that_will_ne_0';
-    
+
         $datastore->runIt();
         $schema = $datastore->getStorage()->getSchema();
         $fields = array_keys($schema['fields']);
-    
+
         $this->assertEquals($truncatedLongFieldName, $fields[2]);
     }
 
@@ -83,21 +83,55 @@ class ImporterTest extends TestCase
         $resource = new Resource(1, __DIR__ . "/data/columnspaces.csv");
         $datastore = $this->getDatastore($resource);
         $noMoreSpaces = 'column_name_with_spaces_in_it';
-    
+
         $datastore->runIt();
         $schema = $datastore->getStorage()->getSchema();
         $fields = array_keys($schema['fields']);
         $this->assertEquals($noMoreSpaces, $fields[2]);
     }
 
-    public function testOver1000()
+    public function testSerialization()
     {
-        $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
+        $timeLimit = 40;
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $this->assertEquals($resource->getID(), 1);
 
         $datastore = $this->getDatastore($resource);
+        $datastore->setTimeLimit($timeLimit);
         $datastore->runIt();
+        $json = json_encode($datastore->jsonSerialize());
 
-        $this->assertEquals(2969, $datastore->getStorage()->count());
+        $datastore2 = Importer::hydrate($json);
+
+        $this->assertEquals(Result::DONE, $datastore2->getResult()->getStatus());
+        $this->assertEquals($timeLimit, $datastore2->getTimeLimit());
+        $this->assertEquals(Result::DONE, $datastore2->getResult()->getStatus());
+    }
+
+    public function testMultiplePasses()
+    {
+        $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
+        $datastore = $this->getDatastore($resource);
+
+        // Hard to know, but unlikely that the file can be parsed in under one
+        // second.
+        $datastore->setTimeLimit(1);
+
+        $datastore->runIt();
+        $json = json_encode($datastore->jsonSerialize());
+        // How many passes does it take to get through the data?
+        $passes = 1;
+        while ($datastore->getResult()->getStatus() != Result::DONE) {
+            $datastore = Importer::hydrate($json);
+            $datastore->runIt();
+            $json = json_encode($datastore);
+            $passes++;
+        }
+        print $datastore->getResult()->getStatus();
+        print "PASSES: $passes\n";
+
+        // There needs to have been more than one pass for this test to be valid.
+        // $this->assertGreaterThan(1, $passes);
 
         $results = $datastore->getStorage()->retrieveAll();
         $values = array_values($results);
