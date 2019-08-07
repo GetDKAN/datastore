@@ -120,19 +120,20 @@ class ImporterTest extends TestCase
         $json = json_encode($datastore->jsonSerialize());
         // How many passes does it take to get through the data?
         $passes = 1;
+        $results = $datastore->getStorage()->retrieveAll();
+
         while ($datastore->getResult()->getStatus() != Result::DONE) {
             $datastore = Importer::hydrate($json);
+            $recordNumber = $datastore->getStateProperty('recordNumber', 0);
             $datastore->runIt();
             $json = json_encode($datastore);
+            $results += $datastore->getStorage()->retrieveAll();
             $passes++;
         }
-        print $datastore->getResult()->getStatus();
-        print "PASSES: $passes\n";
-
         // There needs to have been more than one pass for this test to be valid.
-        // $this->assertGreaterThan(1, $passes);
+        $this->assertGreaterThan(1, $passes);
 
-        $results = $datastore->getStorage()->retrieveAll();
+        // $results = $datastore->getStorage()->retrieveAll();
         $values = array_values($results);
 
         $expected = '["2049","75000403","R","1","DESIGNATED","0.076","0.364","463.2487"]';
