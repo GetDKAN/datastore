@@ -153,20 +153,16 @@ class Importer extends Job
         $p->setAccessible(true);
         $p->setValue($object, Result::hydrate(json_encode($data->result)));
 
-        if (class_exists($data->parserClass) && method_exists($data->parserClass, 'hydrate')) {
-            $p = $reflector->getProperty('parser');
-            $p->setAccessible(true);
-            $p->setValue($object, $data->parserClass::hydrate(json_encode($data->parser)));
-        } else {
-            throw new \Exception("Invalid parser class '{$data->parserClass}'");
-        }
+        $classes = ['parser' => $data->parserClass, 'storage' => $data->storageClass];
 
-        if (class_exists($data->storageClass) && method_exists($data->storageClass, 'hydrate')) {
-            $p = $reflector->getProperty('storage');
-            $p->setAccessible(true);
-            $p->setValue($object, $data->storageClass::hydrate(json_encode($data->storage)));
-        } else {
-            throw new \Exception("Invalid storage class '{$data->storageClass}'");
+        foreach ($classes as $property => $class_name) {
+            if (class_exists($class_name) && method_exists($class_name, 'hydrate')) {
+                $p = $reflector->getProperty($property);
+                $p->setAccessible(true);
+                $p->setValue($object, $class_name::hydrate(json_encode($data->{$property})));
+            } else {
+                throw new \Exception("Invalid {$property} class '{$class_name}'");
+            }
         }
 
         return $object;
