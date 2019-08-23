@@ -50,6 +50,10 @@ class ImporterTest extends TestCase
 
         $this->assertEquals(4, $datastore->getStorage()->count());
 
+        $datastore->runIt();
+        $status = $datastore->getResult()->getStatus();
+        $this->assertEquals(Result::DONE, $status);
+
         $datastore->drop();
 
         $status = $datastore->getResult()->getStatus();
@@ -141,5 +145,14 @@ class ImporterTest extends TestCase
 
         $expected = '["2048","75000402","R","1","DESIGNATED","0.769","1.713","1528.0913"]';
         $this->assertEquals($expected, $values[2968]);
+    }
+
+    public function testBadStorage()
+    {
+        $this->expectExceptionMessage("Invalid storage class 'Dkan\DatastoreTest\TestMemStorageBad'");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $importer = new Importer($resource, new TestMemStorageBad(), \CsvParser\Parser\Csv::getParser());
+        $json = json_encode($importer);
+        Importer::hydrate($json);
     }
 }
