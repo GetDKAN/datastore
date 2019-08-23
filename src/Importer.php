@@ -34,13 +34,22 @@ class Importer extends Job
     public function runIt()
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
-        $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
         $result = $this->getResult();
+
+        $size = filesize($this->resource->getFilePath());
+        $bytes = $chunksProcessed * 32;
+        if ( $size <= $bytes) {
+          return $result;
+        }
+
+        $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
+
         try {
             $h = fopen($this->resource->getFilePath(), 'r');
             fseek($h, ($chunksProcessed)*32);
             while (time() < $maximum_execution_time) {
                 $chunk = fread($h, 32);
+
                 if (!$chunk) {
                     $result->setStatus(Result::DONE);
                     $this->parser->finish();
@@ -113,6 +122,7 @@ class Importer extends Job
             'parser' => $this->getParser()->jsonSerialize(),
             'parserClass' => get_class($this->getParser()),
             'resource' => $this->resource->jsonSerialize(),
+            'storage' => $this->getStorage()->jsonSerialize(),
             'storageClass' => get_class($this->getStorage())
         ];
     }
@@ -146,9 +156,13 @@ class Importer extends Job
             throw new \Exception("Invalid parser class '{$data->parserClass}'");
         }
 
-        $p = $reflector->getProperty('storage');
-        $p->setAccessible(true);
-        $p->setValue($object, new $data->storageClass);
+        if (class_exists($data->storageClass) && method_exists($data->storageClass, 'hydrate')) {
+          $p = $reflector->getProperty('storage');
+          $p->setAccessible(true);
+          $p->setValue($object, $data->storageClass::hydrate(json_encode($data->storage)));
+        } else {
+          throw new \Exception("Invalid storage class '{$data->storageClass}'");
+        }
 
         return $object;
     }
