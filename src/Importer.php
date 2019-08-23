@@ -42,8 +42,9 @@ class Importer extends Job
             $result->setError("Can't get size from file {$this->resource->getFilePath()}");
             return $result;
         }
+
         $bytes = $chunksProcessed * 32;
-        if (!$size || ($size <= $bytes)) {
+        if ($size <= $bytes) {
             return $result;
         }
 
@@ -52,31 +53,37 @@ class Importer extends Job
         try {
             $h = fopen($this->resource->getFilePath(), 'r');
             fseek($h, ($chunksProcessed) * 32);
-            while (time() < $maximum_execution_time) {
-                $chunk = fread($h, 32);
 
-                if (!$chunk) {
-                    $result->setStatus(Result::DONE);
-                    $this->parser->finish();
-                    break;
-                }
-                $this->parser->feed($chunk);
-                $chunksProcessed++;
-                $result->setStatus(Result::STOPPED);
-
-                $this->store();
-                $this->setStateProperty('chunksProcessed', $chunksProcessed);
-            }
+            $this->parseAndStore($h, $maximum_execution_time, $result, $chunksProcessed);
 
             fclose($h);
         } catch (\Exception $e) {
             $result->setStatus(Result::ERROR);
         }
 
-      // Flush the parser.
+        // Flush the parser.
         $this->store();
 
         return $result;
+    }
+
+    private function parseAndStore($fileHandler, $maximumExecutionTime, Result $result, $chunksProcessed)
+    {
+        while (time() < $maximumExecutionTime) {
+            $chunk = fread($fileHandler, 32);
+
+            if (!$chunk) {
+                $result->setStatus(Result::DONE);
+                $this->parser->finish();
+                break;
+            }
+            $this->parser->feed($chunk);
+            $chunksProcessed++;
+            $result->setStatus(Result::STOPPED);
+
+            $this->store();
+            $this->setStateProperty('chunksProcessed', $chunksProcessed);
+        }
     }
 
     public function drop()
