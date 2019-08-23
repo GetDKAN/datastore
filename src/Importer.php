@@ -34,35 +34,56 @@ class Importer extends Job
     public function runIt()
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
-        $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
         $result = $this->getResult();
+
+        $size = @filesize($this->resource->getFilePath());
+        if (!$size) {
+            $result->setStatus(Result::ERROR);
+            $result->setError("Can't get size from file {$this->resource->getFilePath()}");
+            return $result;
+        }
+
+        $bytes = $chunksProcessed * 32;
+        if ($size <= $bytes) {
+            return $result;
+        }
+
+        $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
+
         try {
             $h = fopen($this->resource->getFilePath(), 'r');
-            fseek($h, ($chunksProcessed)*32);
-            while (time() < $maximum_execution_time) {
-                $chunk = fread($h, 32);
-                if (!$chunk) {
-                    $result->setStatus(Result::DONE);
-                    $this->parser->finish();
-                    break;
-                }
-                $this->parser->feed($chunk);
-                $chunksProcessed++;
-                $result->setStatus(Result::STOPPED);
+            fseek($h, ($chunksProcessed) * 32);
 
-                $this->store();
-                $this->setStateProperty('chunksProcessed', $chunksProcessed);
-            }
+            $this->parseAndStore($h, $maximum_execution_time, $result, $chunksProcessed);
 
             fclose($h);
         } catch (\Exception $e) {
             $result->setStatus(Result::ERROR);
         }
 
-      // Flush the parser.
+        // Flush the parser.
         $this->store();
 
         return $result;
+    }
+
+    private function parseAndStore($fileHandler, $maximumExecutionTime, Result $result, $chunksProcessed)
+    {
+        while (time() < $maximumExecutionTime) {
+            $chunk = fread($fileHandler, 32);
+
+            if (!$chunk) {
+                $result->setStatus(Result::DONE);
+                $this->parser->finish();
+                break;
+            }
+            $this->parser->feed($chunk);
+            $chunksProcessed++;
+            $result->setStatus(Result::STOPPED);
+
+            $this->store();
+            $this->setStateProperty('chunksProcessed', $chunksProcessed);
+        }
     }
 
     public function drop()
@@ -113,6 +134,7 @@ class Importer extends Job
             'parser' => $this->getParser()->jsonSerialize(),
             'parserClass' => get_class($this->getParser()),
             'resource' => $this->resource->jsonSerialize(),
+            'storage' => $this->getStorage()->jsonSerialize(),
             'storageClass' => get_class($this->getStorage())
         ];
     }
@@ -138,17 +160,17 @@ class Importer extends Job
         $p->setAccessible(true);
         $p->setValue($object, Result::hydrate(json_encode($data->result)));
 
-        if (class_exists($data->parserClass) && method_exists($data->parserClass, 'hydrate')) {
-            $p = $reflector->getProperty('parser');
-            $p->setAccessible(true);
-            $p->setValue($object, $data->parserClass::hydrate(json_encode($data->parser)));
-        } else {
-            throw new \Exception("Invalid parser class '{$data->parserClass}'");
-        }
+        $classes = ['parser' => $data->parserClass, 'storage' => $data->storageClass];
 
-        $p = $reflector->getProperty('storage');
-        $p->setAccessible(true);
-        $p->setValue($object, new $data->storageClass);
+        foreach ($classes as $property => $class_name) {
+            if (class_exists($class_name) && method_exists($class_name, 'hydrate')) {
+                $p = $reflector->getProperty($property);
+                $p->setAccessible(true);
+                $p->setValue($object, $class_name::hydrate(json_encode($data->{$property})));
+            } else {
+                throw new \Exception("Invalid {$property} class '{$class_name}'");
+            }
+        }
 
         return $object;
     }
