@@ -31,6 +31,6 @@
         "getdkan/csv-parser": "~1.1.2",
         "getdkan/locker": "~1.1.0",
         "getdkan/contracts": "~0.1.0",
-        "getdkan/procrastinator": "~1.0.4"
+        "getdkan/procrastinator": "^2.0.0"
     }
 }
