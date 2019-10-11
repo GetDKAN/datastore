@@ -15,7 +15,7 @@
         }
     },
     "require": {
-        "getdkan/csv-parser": "~1.1.2",
+        "getdkan/csv-parser": "dev-update-contracts",
         "getdkan/locker": "~1.1.0",
         "getdkan/contracts": "dev-loosen-storage-contracts",
         "getdkan/procrastinator": "^2.0.0"
