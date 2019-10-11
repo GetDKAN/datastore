@@ -17,8 +17,8 @@
     "require": {
         "getdkan/csv-parser": "~1.1.2",
         "getdkan/locker": "~1.1.0",
-        "getdkan/contracts": "~0.1.0",
-        "getdkan/procrastinator": "dev-loosen-storage-contracts"
+        "getdkan/contracts": "dev-loosen-storage-contracts",
+        "getdkan/procrastinator": "^2.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~7.5.0"
