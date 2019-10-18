@@ -3,7 +3,6 @@
 namespace Dkan\Datastore;
 
 use Contracts\ParserInterface;
-use Contracts\Schemed;
 use Dkan\Datastore\Storage\StorageInterface;
 use Procrastinator\Job\Job;
 use Procrastinator\Result;
@@ -16,8 +15,6 @@ class Importer extends Job
 
     public function __construct(Resource $resource, StorageInterface $storage, ParserInterface $parser)
     {
-        parent::__construct();
-
         $this->storage = $storage;
         $this->parser = $parser;
         $this->resource = $resource;
@@ -141,7 +138,7 @@ class Importer extends Job
 
     public static function hydrate($json): Importer
     {
-        $data = parent::hydrate($json);
+        $data = json_decode($json);
 
         $reflector = new \ReflectionClass(self::class);
         $object = $reflector->newInstanceWithoutConstructor();
