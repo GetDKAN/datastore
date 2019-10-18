@@ -1,6 +1,7 @@
 {
     "name": "getdkan/datastore",
     "description": "A Drupal-independent version of DKAN's datastore.",
+    "type": "library",
     "license": "GPL-3.0-only",
     "authors": [
         {
