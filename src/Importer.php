@@ -4,31 +4,42 @@ namespace Dkan\Datastore;
 
 use Contracts\ParserInterface;
 use Dkan\Datastore\Storage\StorageInterface;
-use Procrastinator\Job\Job;
+use Procrastinator\Job\AbstractPersistentJob;
 use Procrastinator\Result;
 
-class Importer extends Job
+class Importer extends AbstractPersistentJob
 {
-    private $storage;
+    private $dataStorage;
     private $parser;
     private $resource;
+    
+    protected function __construct(
+        string $identifier,
+        $storage,
+        array $config = null
+    ) {
+        parent::__construct($identifier, $storage, $config);
 
-    public function __construct(Resource $resource, StorageInterface $storage, ParserInterface $parser)
-    {
-        $this->storage = $storage;
-        $this->parser = $parser;
-        $this->resource = $resource;
+        $this->dataStorage = $config['storage'];
+
+        if (!($this->dataStorage instanceof StorageInterface)) {
+            $storageInterfaceClass = StorageInterface::class;
+            throw new \Exception("Storage must be an instance of {$storageInterfaceClass}");
+        }
+
+        $this->parser = $config['parser'];
+        $this->resource = $config['resource'];
     }
 
     public function getStorage()
     {
-        return $this->storage;
+        return $this->dataStorage;
     }
 
   /**
    * {@inheritdoc}
    */
-    public function runIt()
+    protected function runIt()
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         $result = $this->getResult();
@@ -85,9 +96,9 @@ class Importer extends Job
 
     public function drop()
     {
-        $results = $this->storage->retrieveAll();
+        $results = $this->dataStorage->retrieveAll();
         foreach ($results as $id => $data) {
-            $this->storage->remove($id);
+            $this->dataStorage->remove($id);
         }
         $this->getResult()->setStatus(Result::STOPPED);
     }
@@ -98,7 +109,7 @@ class Importer extends Job
         while ($record = $this->parser->getRecord()) {
           // Skip the first record. It is the header.
             if ($recordNumber != 0) {
-                $this->storage->store(json_encode($record), $recordNumber);
+                $this->dataStorage->store(json_encode($record), $recordNumber);
             } else {
                 $this->setStorageSchema($record);
             }
@@ -115,7 +126,7 @@ class Importer extends Job
             'type' => "text",
             ];
         }
-        $this->storage->setSchema($schema);
+        $this->dataStorage->setSchema($schema);
     }
 
     public function getParser(): ParserInterface
@@ -131,21 +142,25 @@ class Importer extends Job
             'parser' => $this->getParser()->jsonSerialize(),
             'parserClass' => get_class($this->getParser()),
             'resource' => $this->resource->jsonSerialize(),
-            'storage' => $this->getStorage()->jsonSerialize(),
-            'storageClass' => get_class($this->getStorage())
+            'dataStorage' => $this->getStorage()->jsonSerialize(),
+            'dataStorageClass' => get_class($this->getStorage())
         ];
     }
 
-    public static function hydrate($json): Importer
+    public static function hydrate(string $json, $instance = null)
     {
+        $object = $instance;
         $data = json_decode($json);
 
         $reflector = new \ReflectionClass(self::class);
-        $object = $reflector->newInstanceWithoutConstructor();
+
+        if (!isset($object)) {
+            $object = $reflector->newInstanceWithoutConstructor();
+        }
 
         $reflector = new \ReflectionClass($object);
 
-        $p = $reflector->getParentClass()->getProperty('timeLimit');
+        $p = $reflector->getParentClass()->getParentClass()->getProperty('timeLimit');
         $p->setAccessible(true);
         $p->setValue($object, $data->timeLimit);
 
@@ -153,11 +168,11 @@ class Importer extends Job
         $p->setAccessible(true);
         $p->setValue($object, Resource::hydrate(json_encode($data->resource)));
 
-        $p = $reflector->getParentClass()->getProperty('result');
+        $p = $reflector->getParentClass()->getParentClass()->getProperty('result');
         $p->setAccessible(true);
         $p->setValue($object, Result::hydrate(json_encode($data->result)));
 
-        $classes = ['parser' => $data->parserClass, 'storage' => $data->storageClass];
+        $classes = ['parser' => $data->parserClass, 'dataStorage' => $data->dataStorageClass];
 
         foreach ($classes as $property => $class_name) {
             if (class_exists($class_name) && method_exists($class_name, 'hydrate')) {
