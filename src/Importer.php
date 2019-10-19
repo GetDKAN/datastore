@@ -149,14 +149,11 @@ class Importer extends AbstractPersistentJob
 
     public static function hydrate(string $json, $instance = null)
     {
-        $object = $instance;
         $data = json_decode($json);
 
         $reflector = new \ReflectionClass(self::class);
 
-        if (!isset($object)) {
-            $object = $reflector->newInstanceWithoutConstructor();
-        }
+        $object = isset($instance) ? $instance : $reflector->newInstanceWithoutConstructor();
 
         self::hydrateJob($reflector, $object, $data);
 
@@ -181,7 +178,6 @@ class Importer extends AbstractPersistentJob
 
     private static function hydrateJob($reflector, $object, $data)
     {
-
         $job = $reflector->getParentClass()->getParentClass();
 
         $p = $job->getProperty('timeLimit');
