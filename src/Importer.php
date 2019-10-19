@@ -158,19 +158,11 @@ class Importer extends AbstractPersistentJob
             $object = $reflector->newInstanceWithoutConstructor();
         }
 
-        $reflector = new \ReflectionClass($object);
-
-        $p = $reflector->getParentClass()->getParentClass()->getProperty('timeLimit');
-        $p->setAccessible(true);
-        $p->setValue($object, $data->timeLimit);
+        self::hydrateJob($reflector, $object, $data);
 
         $p = $reflector->getProperty('resource');
         $p->setAccessible(true);
         $p->setValue($object, Resource::hydrate(json_encode($data->resource)));
-
-        $p = $reflector->getParentClass()->getParentClass()->getProperty('result');
-        $p->setAccessible(true);
-        $p->setValue($object, Result::hydrate(json_encode($data->result)));
 
         $classes = ['parser' => $data->parserClass, 'dataStorage' => $data->dataStorageClass];
 
@@ -185,5 +177,18 @@ class Importer extends AbstractPersistentJob
         }
 
         return $object;
+    }
+
+    private static function hydrateJob($reflector, $object, $data) {
+
+        $job = $reflector->getParentClass()->getParentClass();
+
+        $p = $job->getProperty('timeLimit');
+        $p->setAccessible(true);
+        $p->setValue($object, $data->timeLimit);
+
+        $p = $job->getProperty('result');
+        $p->setAccessible(true);
+        $p->setValue($object, Result::hydrate(json_encode($data->result)));
     }
 }
