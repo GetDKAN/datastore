@@ -179,7 +179,8 @@ class Importer extends AbstractPersistentJob
         return $object;
     }
 
-    private static function hydrateJob($reflector, $object, $data) {
+    private static function hydrateJob($reflector, $object, $data)
+    {
 
         $job = $reflector->getParentClass()->getParentClass();
 
