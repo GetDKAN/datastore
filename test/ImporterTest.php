@@ -187,4 +187,14 @@ class ImporterTest extends TestCase
         $json = json_encode($importer);
         Importer::hydrate($json);
     }
+
+    public function testNonStorage() {
+        $this->expectExceptionMessage("Storage must be an instance of Dkan\Datastore\Storage\StorageInterface");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $importer = Importer::get("1", new Memory(), [
+          "resource" => $resource,
+          "storage" => new class {},
+          "parser" => \CsvParser\Parser\Csv::getParser()
+        ]);
+    }
 }
