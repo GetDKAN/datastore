@@ -2,6 +2,7 @@
 
 namespace Dkan\DatastoreTest;
 
+use Contracts\Mock\Storage\Memory;
 use Dkan\Datastore\Resource;
 use Dkan\Datastore\Importer;
 use Dkan\Datastore\Storage\StorageInterface;
@@ -27,7 +28,13 @@ class ImporterTest extends TestCase
 
     private function getDatastore(Resource $resource)
     {
-        return new Importer($resource, $this->database, \CsvParser\Parser\Csv::getParser());
+        $storage = new Memory();
+        $config = [
+          "resource" => $resource,
+          "storage" => $this->database,
+          "parser" => \CsvParser\Parser\Csv::getParser()
+        ];
+        return Importer::get("1", $storage, $config);
     }
 
     public function testBasics()
@@ -40,7 +47,7 @@ class ImporterTest extends TestCase
         $this->assertTrue($datastore->getParser() instanceof \Contracts\ParserInterface);
         $this->assertEquals(Result::STOPPED, $datastore->getResult()->getStatus());
 
-        $datastore->runIt();
+        $datastore->run();
 
         $schema = $datastore->getStorage()->getSchema();
         $this->assertTrue(is_array($schema['fields']));
@@ -50,7 +57,7 @@ class ImporterTest extends TestCase
 
         $this->assertEquals(4, $datastore->getStorage()->count());
 
-        $datastore->runIt();
+        $datastore->run();
         $status = $datastore->getResult()->getStatus();
         $this->assertEquals(Result::DONE, $status);
 
@@ -64,7 +71,7 @@ class ImporterTest extends TestCase
     {
         $resource = new Resource(1, __DIR__ . "/data/fake.csv");
         $datastore = $this->getDatastore($resource);
-        $datastore->runIt();
+        $datastore->run();
 
         $this->assertEquals(Result::ERROR, $datastore->getResult()->getStatus());
     }
@@ -75,7 +82,7 @@ class ImporterTest extends TestCase
         $datastore = $this->getDatastore($resource);
         $truncatedLongFieldName = 'extra_long_column_name_with_tons_of_characters_that_will_ne_0';
 
-        $datastore->runIt();
+        $datastore->run();
         $schema = $datastore->getStorage()->getSchema();
         $fields = array_keys($schema['fields']);
 
@@ -88,7 +95,7 @@ class ImporterTest extends TestCase
         $datastore = $this->getDatastore($resource);
         $noMoreSpaces = 'column_name_with_spaces_in_it';
 
-        $datastore->runIt();
+        $datastore->run();
         $schema = $datastore->getStorage()->getSchema();
         $fields = array_keys($schema['fields']);
         $this->assertEquals($noMoreSpaces, $fields[2]);
@@ -102,8 +109,8 @@ class ImporterTest extends TestCase
 
         $datastore = $this->getDatastore($resource);
         $datastore->setTimeLimit($timeLimit);
-        $datastore->runIt();
-        $json = json_encode($datastore->jsonSerialize());
+        $datastore->run();
+        $json = json_encode($datastore);
 
         $datastore2 = Importer::hydrate($json);
 
@@ -127,23 +134,29 @@ class ImporterTest extends TestCase
     public function testMultiplePasses()
     {
         $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
-        $datastore = $this->getDatastore($resource);
+
+        $storage = new Memory();
+
+        $config = [
+          "resource" => $resource,
+          "storage" => $this->database,
+          "parser" => \CsvParser\Parser\Csv::getParser()
+        ];
+
+        $datastore = Importer::get("1", $storage, $config);
 
         // Hard to know, but unlikely that the file can be parsed in under one
         // second.
         $datastore->setTimeLimit(1);
 
-        $datastore->runIt();
-        $json = json_encode($datastore->jsonSerialize());
+        $datastore->run();
         // How many passes does it take to get through the data?
         $passes = 1;
         $results = $datastore->getStorage()->retrieveAll();
 
         while ($datastore->getResult()->getStatus() != Result::DONE) {
-            $datastore = Importer::hydrate($json);
-            $recordNumber = $datastore->getStateProperty('recordNumber', 0);
-            $datastore->runIt();
-            $json = json_encode($datastore);
+            $datastore = Importer::get("1", $storage, $config);
+            $datastore->run();
             $results += $datastore->getStorage()->retrieveAll();
             $passes++;
         }
@@ -162,10 +175,28 @@ class ImporterTest extends TestCase
 
     public function testBadStorage()
     {
-        $this->expectExceptionMessage("Invalid storage class 'Dkan\DatastoreTest\TestMemStorageBad'");
+        $this->expectExceptionMessage("Invalid dataStorage class 'Dkan\DatastoreTest\TestMemStorageBad'");
         $resource = new Resource(1, __DIR__ . "/data/countries.csv");
-        $importer = new Importer($resource, new TestMemStorageBad(), \CsvParser\Parser\Csv::getParser());
+
+        $importer = Importer::get("1", new Memory(), [
+          "resource" => $resource,
+          "storage" => new TestMemStorageBad(),
+          "parser" => \CsvParser\Parser\Csv::getParser()
+        ]);
+
         $json = json_encode($importer);
         Importer::hydrate($json);
+    }
+
+    public function testNonStorage()
+    {
+        $this->expectExceptionMessage("Storage must be an instance of Dkan\Datastore\Storage\StorageInterface");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $importer = Importer::get("1", new Memory(), [
+          "resource" => $resource,
+          "storage" => new class {
+          },
+          "parser" => \CsvParser\Parser\Csv::getParser()
+        ]);
     }
 }
