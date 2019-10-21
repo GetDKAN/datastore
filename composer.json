@@ -15,12 +15,12 @@
         }
     },
     "require": {
-        "getdkan/csv-parser": "dev-update-contracts",
-        "getdkan/locker": "~1.1.0",
-        "getdkan/contracts": "dev-loosen-storage-contracts",
+        "getdkan/csv-parser": "^1.1.3",
+        "getdkan/locker": "^1.1.0",
+        "getdkan/contracts": "^0.2.0",
         "getdkan/procrastinator": "^2.0.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~7.5.0"
+        "phpunit/phpunit": "^7.5.0"
     }
 }
