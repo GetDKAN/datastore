@@ -76,9 +76,8 @@ class Importer extends AbstractPersistentJob
         $bytes = $chunksProcessed * 32;
         if ($bytes >= $size) {
             $result->setStatus(Result::DONE);
-        }
-        else {
-          $result->setStatus(Result::STOPPED);
+        } else {
+            $result->setStatus(Result::STOPPED);
         }
 
         return $result;
