@@ -12,7 +12,7 @@ class Importer extends AbstractPersistentJob
     private $dataStorage;
     private $parser;
     private $resource;
-    
+
     protected function __construct(
         string $identifier,
         $storage,
@@ -41,53 +41,62 @@ class Importer extends AbstractPersistentJob
    */
     protected function runIt()
     {
-        $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
-        $result = $this->getResult();
-
         $size = @filesize($this->resource->getFilePath());
         if (!$size) {
-            $result->setStatus(Result::ERROR);
-            $result->setError("Can't get size from file {$this->resource->getFilePath()}");
-            return $result;
+            $this->getResult()->setStatus(Result::ERROR);
+            $this->getResult()->setError("Can't get size from file {$this->resource->getFilePath()}");
+            return $this->getResult();
         }
 
-        $bytes = $chunksProcessed * 32;
-        if ($size <= $bytes) {
-            return $result;
+
+        if ($size <= $this->getBytesProcessed()) {
+            return $this->getResult();
         }
 
         $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
 
         try {
             $h = fopen($this->resource->getFilePath(), 'r');
-            fseek($h, ($chunksProcessed) * 32);
+            fseek($h, $this->getBytesProcessed());
 
-            $this->parseAndStore($h, $maximum_execution_time, $result, $chunksProcessed);
+            $this->parseAndStore($h, $maximum_execution_time);
 
             fclose($h);
         } catch (\Exception $e) {
-            $result->setStatus(Result::ERROR);
+            $this->getResult()->setStatus(Result::ERROR);
         }
 
         // Flush the parser.
         $this->store();
 
-        return $result;
+        if ($this->getBytesProcessed() >= $size) {
+            $this->getResult()->setStatus(Result::DONE);
+        } else {
+            $this->getResult()->setStatus(Result::STOPPED);
+        }
+
+        return $this->getResult();
     }
 
-    private function parseAndStore($fileHandler, $maximumExecutionTime, Result $result, $chunksProcessed)
+    private function getBytesProcessed()
     {
+        $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
+        return $chunksProcessed * 32;
+    }
+
+    private function parseAndStore($fileHandler, $maximumExecutionTime)
+    {
+        $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         while (time() < $maximumExecutionTime) {
             $chunk = fread($fileHandler, 32);
 
             if (!$chunk) {
-                $result->setStatus(Result::DONE);
+                $this->getResult()->setStatus(Result::DONE);
                 $this->parser->finish();
                 break;
             }
             $this->parser->feed($chunk);
             $chunksProcessed++;
-            $result->setStatus(Result::STOPPED);
 
             $this->store();
             $this->setStateProperty('chunksProcessed', $chunksProcessed);
@@ -141,9 +150,6 @@ class Importer extends AbstractPersistentJob
             'result' => $this->getResult()->jsonSerialize(),
             'parser' => $this->getParser()->jsonSerialize(),
             'parserClass' => get_class($this->getParser()),
-            'resource' => $this->resource->jsonSerialize(),
-            'dataStorage' => $this->getStorage()->jsonSerialize(),
-            'dataStorageClass' => get_class($this->getStorage())
         ];
     }
 
@@ -157,11 +163,7 @@ class Importer extends AbstractPersistentJob
 
         self::hydrateJob($reflector, $object, $data);
 
-        $p = $reflector->getProperty('resource');
-        $p->setAccessible(true);
-        $p->setValue($object, Resource::hydrate(json_encode($data->resource)));
-
-        $classes = ['parser' => $data->parserClass, 'dataStorage' => $data->dataStorageClass];
+        $classes = ['parser' => $data->parserClass];
 
         foreach ($classes as $property => $class_name) {
             if (class_exists($class_name) && method_exists($class_name, 'hydrate')) {

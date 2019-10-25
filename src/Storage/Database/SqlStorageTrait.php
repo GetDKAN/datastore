@@ -25,17 +25,17 @@ trait SqlStorageTrait
             $new = trim($new);
             $new = strtolower($new);
             $new = str_replace(" ", "_", $new);
-          
+
             $mysqlMaxColLength = 64;
             if (strlen($new) >= $mysqlMaxColLength) {
                 $strings = str_split($new, $mysqlMaxColLength - 5);
                 $new = $strings[0] . "_{$counter}";
                 $counter++;
             }
-    
+
             $cleanSchema['fields'][$new] = $info;
         }
-    
+
         $this->schema = $cleanSchema;
     }
 

@@ -175,7 +175,8 @@ class ImporterTest extends TestCase
 
     public function testBadStorage()
     {
-        $this->expectExceptionMessage("Invalid dataStorage class 'Dkan\DatastoreTest\TestMemStorageBad'");
+        $storageInterfaceClass = StorageInterface::class;
+        $this->expectExceptionMessage("Storage must be an instance of {$storageInterfaceClass}");
         $resource = new Resource(1, __DIR__ . "/data/countries.csv");
 
         $importer = Importer::get("1", new Memory(), [
