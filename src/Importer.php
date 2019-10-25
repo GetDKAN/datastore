@@ -78,7 +78,8 @@ class Importer extends AbstractPersistentJob
         return $this->getResult();
     }
 
-    private function getBytesProcessed() {
+    private function getBytesProcessed()
+    {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         return $chunksProcessed * 32;
     }
