@@ -13,6 +13,5 @@ interface StorageInterface extends
     BulkRetrieverInterface
 {
     public function setSchema($schema);
-
     public function getSchema();
 }
