@@ -43,11 +43,8 @@ class Importer extends AbstractPersistentJob
     {
         $size = @filesize($this->resource->getFilePath());
         if (!$size) {
-            $this->getResult()->setStatus(Result::ERROR);
-            $this->getResult()->setError("Can't get size from file {$this->resource->getFilePath()}");
-            return $this->getResult();
+            return $this->setResultError("Can't get size from file {$this->resource->getFilePath()}");
         }
-
 
         if ($size <= $this->getBytesProcessed()) {
             return $this->getResult();
@@ -63,7 +60,7 @@ class Importer extends AbstractPersistentJob
 
             fclose($h);
         } catch (\Exception $e) {
-            $this->getResult()->setStatus(Result::ERROR);
+            return $this->setResultError($e->getMessage());
         }
 
         // Flush the parser.
@@ -75,6 +72,13 @@ class Importer extends AbstractPersistentJob
             $this->getResult()->setStatus(Result::STOPPED);
         }
 
+        return $this->getResult();
+    }
+
+    private function setResultError($message): Result
+    {
+        $this->getResult()->setStatus(Result::ERROR);
+        $this->getResult()->setError($message);
         return $this->getResult();
     }
 
