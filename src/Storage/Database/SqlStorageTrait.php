@@ -19,7 +19,8 @@ trait SqlStorageTrait
     private function cleanSchema()
     {
         $counter = 0;
-        $cleanSchema = ['fields' => []];
+        $cleanSchema = $this->schema;
+        $cleanSchema['fields'] = [];
         foreach ($this->schema['fields'] as $field => $info) {
             $new = preg_replace("/[^A-Za-z0-9_ ]/", '', $field);
             $new = trim($new);
