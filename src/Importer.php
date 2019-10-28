@@ -64,6 +64,8 @@ class Importer extends AbstractPersistentJob
             fclose($h);
         } catch (\Exception $e) {
             $this->getResult()->setStatus(Result::ERROR);
+            $this->getResult()->setError($e->getMessage());
+            return $this->getResult();
         }
 
         // Flush the parser.
