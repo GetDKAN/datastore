@@ -147,51 +147,10 @@ class Importer extends AbstractPersistentJob
         return $this->parser;
     }
 
-    public function jsonSerialize()
+    protected function serializeIgnoreProperties(): array
     {
-        return (object) [
-            'timeLimit' => $this->getTimeLimit(),
-            'result' => $this->getResult()->jsonSerialize(),
-            'parser' => $this->getParser()->jsonSerialize(),
-            'parserClass' => get_class($this->getParser()),
-        ];
-    }
-
-    public static function hydrate(string $json, $instance = null)
-    {
-        $data = json_decode($json);
-
-        $reflector = new \ReflectionClass(self::class);
-
-        $object = isset($instance) ? $instance : $reflector->newInstanceWithoutConstructor();
-
-        self::hydrateJob($reflector, $object, $data);
-
-        $classes = ['parser' => $data->parserClass];
-
-        foreach ($classes as $property => $class_name) {
-            if (class_exists($class_name) && method_exists($class_name, 'hydrate')) {
-                $p = $reflector->getProperty($property);
-                $p->setAccessible(true);
-                $p->setValue($object, $class_name::hydrate(json_encode($data->{$property})));
-            } else {
-                throw new \Exception("Invalid {$property} class '{$class_name}'");
-            }
-        }
-
-        return $object;
-    }
-
-    private static function hydrateJob($reflector, $object, $data)
-    {
-        $job = $reflector->getParentClass()->getParentClass();
-
-        $p = $job->getProperty('timeLimit');
-        $p->setAccessible(true);
-        $p->setValue($object, $data->timeLimit);
-
-        $p = $job->getProperty('result');
-        $p->setAccessible(true);
-        $p->setValue($object, Result::hydrate(json_encode($data->result)));
+        $ignore = parent::serializeIgnoreProperties();
+        $ignore[] = "dataStorage";
+        return $ignore;
     }
 }

@@ -118,19 +118,6 @@ class ImporterTest extends TestCase
         $this->assertEquals($timeLimit, $datastore2->getTimeLimit());
     }
 
-    public function testSerializationWithBadParser()
-    {
-        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
-        $datastore = $this->getDatastore($resource);
-
-        $data = $datastore->jsonSerialize();
-        $data->parserClass = 'BadParser';
-        $json = json_encode($data);
-
-        $this->expectException(\Exception::class);
-        Importer::hydrate($json);
-    }
-
     public function testMultiplePasses()
     {
         $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
