@@ -151,6 +151,7 @@ class Importer extends AbstractPersistentJob
     {
         $ignore = parent::serializeIgnoreProperties();
         $ignore[] = "dataStorage";
+        $ignore[] = "resource";
         return $ignore;
     }
 }
