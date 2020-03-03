@@ -10,14 +10,16 @@ class Resource implements \JsonSerializable
 
     private $id;
     private $filePath;
+    private $mimeType;
 
   /**
    * Resource constructor.
    */
-    public function __construct($id, $file_path)
+    public function __construct($id, $file_path, $mime_type)
     {
         $this->id = $id;
         $this->filePath = $file_path;
+        $this->mimeType = $mime_type;
     }
 
   /**
@@ -36,11 +38,20 @@ class Resource implements \JsonSerializable
         return $this->filePath;
     }
 
+  /**
+   * Getter.
+   */
+    public function getMimeType()
+    {
+        return $this->mimeType;
+    }
+
     public function jsonSerialize()
     {
         return (object) [
             'filePath' => $this->filePath,
-            'id' => $this->id
+            'id' => $this->id,
+            'mimeType' => $this->mimeType,
         ];
     }
 
@@ -59,6 +70,10 @@ class Resource implements \JsonSerializable
         $p = $reflector->getProperty('id');
         $p->setAccessible(true);
         $p->setValue($object, $data->id);
+
+        $p = $reflector->getProperty('mimeType');
+        $p->setAccessible(true);
+        $p->setValue($object, $data->mimeType);
 
         return $object;
     }
