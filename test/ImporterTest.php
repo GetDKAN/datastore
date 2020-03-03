@@ -39,7 +39,7 @@ class ImporterTest extends TestCase
 
     public function testBasics()
     {
-        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv", "text/csv");
         $this->assertEquals($resource->getID(), 1);
 
         $datastore = $this->getDatastore($resource);
@@ -69,7 +69,7 @@ class ImporterTest extends TestCase
 
     public function testError()
     {
-        $resource = new Resource(1, __DIR__ . "/data/fake.csv");
+        $resource = new Resource(1, __DIR__ . "/data/fake.csv", "text/csv");
         $datastore = $this->getDatastore($resource);
         $datastore->run();
 
@@ -78,7 +78,7 @@ class ImporterTest extends TestCase
 
     public function testLongColumnName()
     {
-        $resource = new Resource(1, __DIR__ . "/data/longcolumn.csv");
+        $resource = new Resource(1, __DIR__ . "/data/longcolumn.csv", "text/csv");
         $datastore = $this->getDatastore($resource);
         $truncatedLongFieldName = 'extra_long_column_name_with_tons_of_characters_that_will_ne_0';
 
@@ -91,7 +91,7 @@ class ImporterTest extends TestCase
 
     public function testColumnNameSpaces()
     {
-        $resource = new Resource(1, __DIR__ . "/data/columnspaces.csv");
+        $resource = new Resource(1, __DIR__ . "/data/columnspaces.csv", "text/csv");
         $datastore = $this->getDatastore($resource);
         $noMoreSpaces = 'column_name_with_spaces_in_it';
 
@@ -104,7 +104,7 @@ class ImporterTest extends TestCase
     public function testSerialization()
     {
         $timeLimit = 40;
-        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv", "text/csv");
         $this->assertEquals($resource->getID(), 1);
 
         $datastore = $this->getDatastore($resource);
@@ -120,7 +120,7 @@ class ImporterTest extends TestCase
 
     public function testMultiplePasses()
     {
-        $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv");
+        $resource = new Resource(1, __DIR__ . "/data/Bike_Lane.csv", "text/csv");
 
         $storage = new Memory();
 
@@ -164,7 +164,7 @@ class ImporterTest extends TestCase
     {
         $storageInterfaceClass = StorageInterface::class;
         $this->expectExceptionMessage("Storage must be an instance of {$storageInterfaceClass}");
-        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv", "text/csv");
 
         $importer = Importer::get("1", new Memory(), [
           "resource" => $resource,
@@ -179,7 +179,7 @@ class ImporterTest extends TestCase
     public function testNonStorage()
     {
         $this->expectExceptionMessage("Storage must be an instance of Dkan\Datastore\Storage\StorageInterface");
-        $resource = new Resource(1, __DIR__ . "/data/countries.csv");
+        $resource = new Resource(1, __DIR__ . "/data/countries.csv", "text/csv");
         $importer = Importer::get("1", new Memory(), [
           "resource" => $resource,
           "storage" => new class {
