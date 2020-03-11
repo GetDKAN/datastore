@@ -12,6 +12,7 @@ class Importer extends AbstractPersistentJob
     private $dataStorage;
     private $parser;
     private $resource;
+    public const BYTES_PER_CHUNK = 8192;
 
     protected function __construct(
         string $identifier,
@@ -85,14 +86,14 @@ class Importer extends AbstractPersistentJob
     private function getBytesProcessed()
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
-        return $chunksProcessed * 32;
+        return $chunksProcessed * self::BYTES_PER_CHUNK;
     }
 
     private function parseAndStore($fileHandler, $maximumExecutionTime)
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         while (time() < $maximumExecutionTime) {
-            $chunk = fread($fileHandler, 32);
+            $chunk = fread($fileHandler, self::BYTES_PER_CHUNK);
 
             if (!$chunk) {
                 $this->getResult()->setStatus(Result::DONE);
