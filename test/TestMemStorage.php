@@ -29,6 +29,11 @@ class TestMemStorage implements StorageInterface, \JsonSerializable
 
     public function store($data, string $id = null): string
     {
+        return $this->storeMultiple([ $data ], $id);
+    }
+
+    public function storeMultiple(array $data, string $id = null) : string
+    {
         if (!isset($id)) {
             $ids = array_keys($this->storage);
             if (empty($ids)) {
@@ -38,14 +43,12 @@ class TestMemStorage implements StorageInterface, \JsonSerializable
                 $id = array_unshift($ids) + 1;
             }
         }
-
-        if (!isset($this->storage[$id])) {
-            $this->storage[$id] = $data;
-            return $id;
+        foreach ($data as $datum) {
+            if (!isset($this->storage[$id])) {
+                $this->storage[$id] = $datum;
+                $id++;
+            }
         }
-
-        $this->storage[$id] = $data;
-
         return true;
     }
 
