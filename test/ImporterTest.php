@@ -153,11 +153,14 @@ class ImporterTest extends TestCase
         // $results = $datastore->getStorage()->retrieveAll();
         $values = array_values($results);
 
-        $expected = '["2049","75000403","R","1","DESIGNATED","0.076","0.364","463.2487"]';
-        $this->assertEquals($expected, $values[0]);
+        $first = '["1","11110000","L","1","DESIGNATED","16.814","16.846","51.484"]';
+        $this->assertEquals($first, $values[0]);
 
-        $expected = '["2048","75000402","R","1","DESIGNATED","0.769","1.713","1528.0913"]';
-        $this->assertEquals($expected, $values[2968]);
+        $middle = '["8000","57060000","R","1","DESIGNATED","5.56","5.638","125.8956"]';
+        $this->assertEquals($middle, $values[7915]);
+
+        $last = '["15999","93190000","L","1","DESIGNATED","13.78","17.057","5273.7893"]';
+        $this->assertEquals($last, $values[14993]);
     }
 
     public function testBadStorage()
