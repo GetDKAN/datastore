@@ -120,15 +120,19 @@ class Importer extends AbstractPersistentJob
     private function store()
     {
         $recordNumber = $this->getStateProperty('recordNumber', 0);
-        while ($record = $this->parser->getRecord()) {
-          // Skip the first record. It is the header.
+        $records = [];
+        foreach ($this->parser->getRecords() as $record) {
+            // Skip the first record. It is the header.
             if ($recordNumber != 0) {
-                // @todo Ideintify if we need to pass an id to the storage.
-                $this->dataStorage->store(json_encode($record));
+                // @todo Identify if we need to pass an id to the storage.
+                $records[] = json_encode($record);
             } else {
                 $this->setStorageSchema($record);
             }
             $recordNumber++;
+        }
+        if (!empty($records)) {
+            $this->dataStorage->storeMultiple($records);
         }
         $this->setStateProperty('recordNumber', $recordNumber);
     }
