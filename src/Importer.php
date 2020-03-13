@@ -12,6 +12,7 @@ class Importer extends AbstractPersistentJob
     private $dataStorage;
     private $parser;
     private $resource;
+    public const BYTES_PER_CHUNK = 8192;
 
     protected function __construct(
         string $identifier,
@@ -85,14 +86,14 @@ class Importer extends AbstractPersistentJob
     private function getBytesProcessed()
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
-        return $chunksProcessed * 32;
+        return $chunksProcessed * self::BYTES_PER_CHUNK;
     }
 
     private function parseAndStore($fileHandler, $maximumExecutionTime)
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         while (time() < $maximumExecutionTime) {
-            $chunk = fread($fileHandler, 32);
+            $chunk = fread($fileHandler, self::BYTES_PER_CHUNK);
 
             if (!$chunk) {
                 $this->getResult()->setStatus(Result::DONE);
@@ -119,15 +120,19 @@ class Importer extends AbstractPersistentJob
     private function store()
     {
         $recordNumber = $this->getStateProperty('recordNumber', 0);
-        while ($record = $this->parser->getRecord()) {
-          // Skip the first record. It is the header.
+        $records = [];
+        foreach ($this->parser->getRecords() as $record) {
+            // Skip the first record. It is the header.
             if ($recordNumber != 0) {
-                // @todo Ideintify if we need to pass an id to the storage.
-                $this->dataStorage->store(json_encode($record));
+                // @todo Identify if we need to pass an id to the storage.
+                $records[] = json_encode($record);
             } else {
                 $this->setStorageSchema($record);
             }
             $recordNumber++;
+        }
+        if (!empty($records)) {
+            $this->dataStorage->storeMultiple($records);
         }
         $this->setStateProperty('recordNumber', $recordNumber);
     }
