@@ -150,17 +150,16 @@ class ImporterTest extends TestCase
         // There needs to have been more than one pass for this test to be valid.
         $this->assertGreaterThan(1, $passes);
 
-        // $results = $datastore->getStorage()->retrieveAll();
         $values = array_values($results);
 
-        $first = '["1","11110000","L","1","DESIGNATED","16.814","16.846","51.484"]';
-        $this->assertEquals($first, $values[0]);
+        $a = '["1","11110000","L","1","DESIGNATED","16.814","16.846","51.484"]';
+        $this->assertEquals($a, $values[0]);
 
-        $middle = '["8000","57060000","R","1","DESIGNATED","5.56","5.638","125.8956"]';
-        $this->assertEquals($middle, $values[7915]);
+        $b = '["5083","87080001","R","1","DESIGNATED","1.074","1.177","163.244"]';
+        $this->assertEquals($b, $values[5000]);
 
-        $last = '["15999","93190000","L","1","DESIGNATED","13.78","17.057","5273.7893"]';
-        $this->assertEquals($last, $values[14993]);
+        $c = '["11001","57060000","R","1","DESIGNATED","4.505","4.682","285.7762"]';
+        $this->assertEquals($c, $values[10000]);
     }
 
     public function testBadStorage()
