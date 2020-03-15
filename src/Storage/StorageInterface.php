@@ -4,11 +4,11 @@
 namespace Dkan\Datastore\Storage;
 
 use Contracts\BulkRetrieverInterface;
+use Contracts\BulkStorerInterface;
 use Contracts\CountableInterface;
-use Contracts\StorerInterface;
 
 interface StorageInterface extends
-    StorerInterface,
+    BulkStorerInterface,
     CountableInterface,
     BulkRetrieverInterface
 {
