@@ -67,9 +67,18 @@ class ImporterTest extends TestCase
         $this->assertEquals(Result::STOPPED, $status);
     }
 
-    public function testError()
+    public function testFileNotFound()
     {
-        $resource = new Resource(1, __DIR__ . "/data/fake.csv", "text/csv");
+        $resource = new Resource(1, __DIR__ . "/data/non-existent.csv", "text/csv");
+        $datastore = $this->getDatastore($resource);
+        $datastore->run();
+
+        $this->assertEquals(Result::ERROR, $datastore->getResult()->getStatus());
+    }
+
+    public function testNonTextFile()
+    {
+        $resource = new Resource(1, __DIR__ . "/data/non-text.csv", "text/csv");
         $datastore = $this->getDatastore($resource);
         $datastore->run();
 
