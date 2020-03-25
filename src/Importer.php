@@ -42,9 +42,10 @@ class Importer extends AbstractPersistentJob
    */
     protected function runIt()
     {
-        $size = @filesize($this->resource->getFilePath());
+        $filename = $this->resource->getFilePath();
+        $size = @filesize($filename);
         if (!$size) {
-            return $this->setResultError("Can't get size from file {$this->resource->getFilePath()}");
+            return $this->setResultError("Can't get size from file {$filename}");
         }
 
         if ($size <= $this->getBytesProcessed()) {
@@ -54,7 +55,9 @@ class Importer extends AbstractPersistentJob
         $maximum_execution_time = $this->getTimeLimit() ? (time() + $this->getTimeLimit()) : PHP_INT_MAX;
 
         try {
-            $h = fopen($this->resource->getFilePath(), 'r');
+            $this->assertTextFile($filename);
+
+            $h = fopen($filename, 'r');
             fseek($h, $this->getBytesProcessed());
 
             $this->parseAndStore($h, $maximum_execution_time);
@@ -74,6 +77,14 @@ class Importer extends AbstractPersistentJob
         }
 
         return $this->getResult();
+    }
+
+    private function assertTextFile(string $filename)
+    {
+        $mimeType = mime_content_type($filename);
+        if ("text" != substr($mimeType, 0, 4)) {
+            throw new \Exception("Invalid mime type: {$mimeType}");
+        }
     }
 
     private function setResultError($message): Result
