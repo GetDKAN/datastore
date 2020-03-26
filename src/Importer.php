@@ -111,6 +111,7 @@ class Importer extends AbstractPersistentJob
                 $this->parser->finish();
                 break;
             }
+            $chunk = utf8_encode($chunk);
             $this->parser->feed($chunk);
             $chunksProcessed++;
 
