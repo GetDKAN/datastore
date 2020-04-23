@@ -35,7 +35,7 @@ trait SqlStorageTrait
             }
 
             if ($field != $new) {
-              $info['description'] = $field;
+                $info['description'] = $field;
             }
 
             $cleanSchema['fields'][$new] = $info;
