@@ -34,6 +34,10 @@ trait SqlStorageTrait
                 $counter++;
             }
 
+            if ($field != $new) {
+                $info['description'] = $field;
+            }
+
             $cleanSchema['fields'][$new] = $info;
         }
 
