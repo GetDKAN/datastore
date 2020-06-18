@@ -6,6 +6,7 @@ use Contracts\ParserInterface;
 use Dkan\Datastore\Storage\StorageInterface;
 use Procrastinator\Job\AbstractPersistentJob;
 use Procrastinator\Result;
+use \ForceUTF8\Encoding;
 
 class Importer extends AbstractPersistentJob
 {
@@ -111,7 +112,7 @@ class Importer extends AbstractPersistentJob
                 $this->parser->finish();
                 break;
             }
-            $chunk = utf8_encode($chunk);
+            $chunk = Encoding::toUTF8($chunk);
             $this->parser->feed($chunk);
             $chunksProcessed++;
 
