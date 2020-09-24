@@ -153,12 +153,31 @@ class Importer extends AbstractPersistentJob
     private function setStorageSchema($header)
     {
         $schema = [];
+        $this->assertUniqueHeaders($header);
         foreach ($header as $field) {
             $schema['fields'][$field] = [
             'type' => "text",
             ];
         }
         $this->dataStorage->setSchema($schema);
+    }
+
+  /**
+   * Verify headers are unique.
+   *
+   * @param $header
+   *   List of strings
+   *
+   * @throws \Exception
+   */
+    private function assertUniqueHeaders($header)
+    {
+        if (count($header) != count(array_unique($header))) {
+            $duplicates = array_keys(array_filter(array_count_values($header), function ($i) {
+                return $i > 1;
+            }));
+            throw new \Exception("Duplicate headers error: " . implode(', ', $duplicates));
+        }
     }
 
     public function getParser(): ParserInterface
