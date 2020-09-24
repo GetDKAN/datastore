@@ -162,6 +162,14 @@ class Importer extends AbstractPersistentJob
         $this->dataStorage->setSchema($schema);
     }
 
+  /**
+   * Verify headers are unique.
+   *
+   * @param $header
+   *   List of strings
+   *
+   * @throws \Exception
+   */
     private function assertUniqueHeaders($header)
     {
         if (count($header) != count(array_unique($header))) {
