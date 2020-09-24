@@ -85,6 +85,16 @@ class ImporterTest extends TestCase
         $this->assertEquals(Result::ERROR, $datastore->getResult()->getStatus());
     }
 
+    public function testDuplicateHeaders()
+    {
+        $resource = new Resource(1, __DIR__ . "/data/duplicate-headers.csv", "text/csv");
+        $datastore = $this->getDatastore($resource);
+        $datastore->run();
+
+        $this->assertEquals(Result::ERROR, $datastore->getResult()->getStatus());
+        $this->assertEquals("Duplicate headers error: bar, baz", $datastore->getResult()->getError());
+    }
+
     public function testLongColumnName()
     {
         $resource = new Resource(1, __DIR__ . "/data/longcolumn.csv", "text/csv");
