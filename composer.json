@@ -16,7 +16,7 @@
         }
     },
     "require": {
-        "getdkan/csv-parser": "^1.2.1",
+        "getdkan/csv-parser": "^1.2.3",
         "getdkan/locker": "^1.1.0",
         "getdkan/contracts": "^1.0.0",
         "getdkan/procrastinator": "^4.0.0",
