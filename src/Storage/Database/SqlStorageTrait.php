@@ -54,7 +54,8 @@ trait SqlStorageTrait
         return $this->schema;
     }
 
-    public function generateToken($field) {
+    public function generateToken($field)
+    {
         $md5 = md5($field);
         return substr($md5, 0, 4);
     }
