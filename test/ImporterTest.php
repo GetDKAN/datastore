@@ -99,13 +99,17 @@ class ImporterTest extends TestCase
     {
         $resource = new Resource(1, __DIR__ . "/data/longcolumn.csv", "text/csv");
         $datastore = $this->getDatastore($resource);
-        $truncatedLongFieldName = 'extra_long_column_name_with_tons_of_characters_that_will_ne_0';
+        $truncatedLongFieldName = 'extra_long_column_name_with_tons_of_characters_that_will_ne_e872';
 
         $datastore->run();
         $schema = $datastore->getStorage()->getSchema();
         $fields = array_keys($schema['fields']);
 
         $this->assertEquals($truncatedLongFieldName, $fields[2]);
+        $this->assertEquals(64, strlen($fields[2]));
+
+        $this->assertNotEquals($fields[3], $truncatedLongFieldName);
+        $this->assertEquals(64, strlen($fields[3]));
     }
 
     public function testColumnNameSpaces()

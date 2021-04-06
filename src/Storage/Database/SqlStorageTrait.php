@@ -29,7 +29,7 @@ trait SqlStorageTrait
             $mysqlMaxColLength = 64;
             if (strlen($new) >= $mysqlMaxColLength) {
                 $strings = str_split($new, $mysqlMaxColLength - 5);
-                $token = self::generateToken($field);
+                $token = $this->generateToken($field);
                 $new = $strings[0] . "_{$token}";
             }
 
@@ -54,8 +54,8 @@ trait SqlStorageTrait
         return $this->schema;
     }
 
-    public static function generateToken($field) {
+    public function generateToken($field) {
       $md5 = md5($field);
-      return str_split($md5, 4);
+      return substr($md5, 0, 4);
     }
 }
