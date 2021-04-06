@@ -18,7 +18,6 @@ trait SqlStorageTrait
      */
     private function cleanSchema()
     {
-        $counter = 0;
         $cleanSchema = $this->schema;
         $cleanSchema['fields'] = [];
         foreach ($this->schema['fields'] as $field => $info) {
@@ -30,8 +29,8 @@ trait SqlStorageTrait
             $mysqlMaxColLength = 64;
             if (strlen($new) >= $mysqlMaxColLength) {
                 $strings = str_split($new, $mysqlMaxColLength - 5);
-                $new = $strings[0] . "_{$counter}";
-                $counter++;
+                $token = self::generateToken($field);
+                $new = $strings[0] . "_{$token}";
             }
 
             if ($field != $new) {
@@ -53,5 +52,10 @@ trait SqlStorageTrait
     public function getSchema()
     {
         return $this->schema;
+    }
+
+    public static function generateToken($field) {
+      $md5 = md5($field);
+      return str_split($md5, 4);
     }
 }
