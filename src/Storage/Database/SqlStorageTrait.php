@@ -55,7 +55,7 @@ trait SqlStorageTrait
     }
 
     public function generateToken($field) {
-      $md5 = md5($field);
-      return substr($md5, 0, 4);
+        $md5 = md5($field);
+        return substr($md5, 0, 4);
     }
 }
