@@ -27,7 +27,7 @@ trait SqlStorageTrait
             $new = str_replace(" ", "_", $new);
 
             $mysqlMaxColLength = 64;
-            if (strlen($new) >= $mysqlMaxColLength) {
+            if (strlen($new) > $mysqlMaxColLength) {
                 $strings = str_split($new, $mysqlMaxColLength - 5);
                 $token = $this->generateToken($field);
                 $new = $strings[0] . "_{$token}";
