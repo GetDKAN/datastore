@@ -15,7 +15,7 @@ class Importer extends AbstractPersistentJob
     protected $resource;
     public const BYTES_PER_CHUNK = 8192;
 
-    protected  function __construct(
+    protected function __construct(
         string $identifier,
         $storage,
         array $config = null
@@ -41,7 +41,7 @@ class Importer extends AbstractPersistentJob
   /**
    * {@inheritdoc}
    */
-    protected  function runIt()
+    protected function runIt()
     {
         $filename = $this->resource->getFilePath();
         $size = @filesize($filename);
