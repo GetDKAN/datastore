@@ -10,9 +10,9 @@ use \ForceUTF8\Encoding;
 
 class Importer extends AbstractPersistentJob
 {
-    private $dataStorage;
-    private $parser;
-    private $resource;
+    protected $dataStorage;
+    protected $parser;
+    protected $resource;
     public const BYTES_PER_CHUNK = 8192;
 
     protected function __construct(
@@ -80,7 +80,7 @@ class Importer extends AbstractPersistentJob
         return $this->getResult();
     }
 
-    private function assertTextFile(string $filename)
+    protected function assertTextFile(string $filename)
     {
         $mimeType = mime_content_type($filename);
         if ("text" != substr($mimeType, 0, 4)) {
@@ -88,20 +88,20 @@ class Importer extends AbstractPersistentJob
         }
     }
 
-    private function setResultError($message): Result
+    protected function setResultError($message): Result
     {
         $this->getResult()->setStatus(Result::ERROR);
         $this->getResult()->setError($message);
         return $this->getResult();
     }
 
-    private function getBytesProcessed()
+    protected function getBytesProcessed()
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         return $chunksProcessed * self::BYTES_PER_CHUNK;
     }
 
-    private function parseAndStore($fileHandler, $maximumExecutionTime)
+    protected function parseAndStore($fileHandler, $maximumExecutionTime)
     {
         $chunksProcessed = $this->getStateProperty('chunksProcessed', 0);
         while (time() < $maximumExecutionTime) {
@@ -130,7 +130,7 @@ class Importer extends AbstractPersistentJob
         $this->getResult()->setStatus(Result::STOPPED);
     }
 
-    private function store()
+    protected function store()
     {
         $recordNumber = $this->getStateProperty('recordNumber', 0);
         $records = [];
@@ -150,7 +150,7 @@ class Importer extends AbstractPersistentJob
         $this->setStateProperty('recordNumber', $recordNumber);
     }
 
-    private function setStorageSchema($header)
+    protected function setStorageSchema($header)
     {
         $schema = [];
         $this->assertUniqueHeaders($header);
@@ -170,7 +170,7 @@ class Importer extends AbstractPersistentJob
    *
    * @throws \Exception
    */
-    private function assertUniqueHeaders($header)
+    protected function assertUniqueHeaders($header)
     {
         if (count($header) != count(array_unique($header))) {
             $duplicates = array_keys(array_filter(array_count_values($header), function ($i) {
