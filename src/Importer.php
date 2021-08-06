@@ -38,9 +38,9 @@ class Importer extends AbstractPersistentJob
         return $this->dataStorage;
     }
 
-  /**
-   * {@inheritdoc}
-   */
+    /**
+     * {@inheritdoc}
+     */
     protected function runIt()
     {
         $filename = $this->resource->getFilePath();
@@ -150,26 +150,61 @@ class Importer extends AbstractPersistentJob
         $this->setStateProperty('recordNumber', $recordNumber);
     }
 
-    protected function setStorageSchema($header)
+    /**
+     * Determine whether the supplied array is an associative array.
+     *
+     * @param array $arr
+     *   Array being analyzed.
+     *
+     * @return bool
+     *   TRUE if the array is associative and FALSE if it's sequential.
+     */
+    protected static function isAssoc(array $arr): bool
     {
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+    /**
+     * Set datastorage schema using the given table headers.
+     *
+     * @param array $headers
+     *   Either an associative array of table columns keyed by header name or a
+     *   sequential array of table columns without header names.
+     *
+     * @return void
+     */
+    protected function setStorageSchema(array $headers): void
+    {
+        // Ensure the supplied table fields are unique before proceeding.
+        $this->assertUniqueHeaders($headers);
+
+        // Determine whether the supplied table fields have formatted column
+        // names specified as well.
+        $hasNames = self::isAssoc($headers);
+
+        // Generate schema array using the supplied table fields.
         $schema = [];
-        $this->assertUniqueHeaders($header);
-        foreach ($header as $field) {
-            $schema['fields'][$field] = [
-            'type' => "text",
-            ];
+        foreach ($headers as $name => $field) {
+            $schema['fields'][$field] = ['type' => 'text'];
+            // If column names were supplied, set the field's description to
+            // it's corresponding column name.
+            if ($hasNames) {
+                $schema['fields'][$field]['description'] = $name;
+            }
         }
+
         $this->dataStorage->setSchema($schema);
     }
 
-  /**
-   * Verify headers are unique.
-   *
-   * @param $header
-   *   List of strings
-   *
-   * @throws \Exception
-   */
+    /**
+     * Verify headers are unique.
+     *
+     * @param $header
+     *   List of strings
+     *
+     * @throws \Exception
+     *   When a duplicate header is found.
+     */
     protected function assertUniqueHeaders($header)
     {
         if (count($header) != count(array_unique($header))) {
