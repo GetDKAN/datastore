@@ -12,6 +12,19 @@ interface StorageInterface extends
     CountableInterface,
     BulkRetrieverInterface
 {
-    public function setSchema($schema);
-    public function getSchema();
+    /**
+     * Accessor for schema property.
+     *
+     * @return array[]
+     *  Schema property value.
+     */
+    public function getSchema(): array;
+
+    /**
+     * Mutator for schema property.
+     *
+     * @param array[]
+     *   New schema property value.
+     */
+    public function setSchema(array $schema): void;
 }

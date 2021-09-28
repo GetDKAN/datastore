@@ -5,6 +5,7 @@ namespace Dkan\DatastoreTest\Storage\Database;
 
 
 use Dkan\Datastore\Storage\Database\SqlStorageTrait;
+use Dkan\Datastore\Storage\StorageInterface;
 use PHPUnit\Framework\TestCase;
 
 class SqlStorageTraitTest extends TestCase
@@ -22,7 +23,7 @@ class SqlStorageTraitTest extends TestCase
             ]
         ];
 
-        $object = new class() {
+        $object = new class() implements StorageInterface {
             use SqlStorageTrait;
         };
 

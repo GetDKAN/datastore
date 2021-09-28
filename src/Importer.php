@@ -31,6 +31,7 @@ class Importer extends AbstractPersistentJob
 
         $this->parser = $config['parser'];
         $this->resource = $config['resource'];
+        $this->setStorageSchema($this->resource->getSchema());
     }
 
     public function getStorage()
@@ -135,13 +136,8 @@ class Importer extends AbstractPersistentJob
         $recordNumber = $this->getStateProperty('recordNumber', 0);
         $records = [];
         foreach ($this->parser->getRecords() as $record) {
-            // Skip the first record. It is the header.
-            if ($recordNumber != 0) {
-                // @todo Identify if we need to pass an id to the storage.
-                $records[] = json_encode($record);
-            } else {
-                $this->setStorageSchema($record);
-            }
+            // @todo Identify if we need to pass an id to the storage.
+            $records[] = json_encode($record);
             $recordNumber++;
         }
         if (!empty($records)) {
@@ -150,33 +146,34 @@ class Importer extends AbstractPersistentJob
         $this->setStateProperty('recordNumber', $recordNumber);
     }
 
-    protected function setStorageSchema($header)
+    /**
+     * Pass along resource table schema to data storage table.
+     *
+     * @param array[] $schema
+     *   Resource datastore table schema.
+     */
+    protected function setStorageSchema(array $schema): void
     {
-        $schema = [];
-        $this->assertUniqueHeaders($header);
-        foreach ($header as $field) {
-            $schema['fields'][$field] = [
-            'type' => "text",
-            ];
-        }
+        $this->assertUniqueHeaders($schema);
         $this->dataStorage->setSchema($schema);
     }
 
-  /**
-   * Verify headers are unique.
-   *
-   * @param $header
-   *   List of strings
-   *
-   * @throws \Exception
-   */
-    protected function assertUniqueHeaders($header)
+    /**
+     * Verify headers are unique.
+     *
+     * @param string[] $header
+     *   List of headers.
+     *
+     * @throws \UnexpectedValueException
+     *   When duplicate headers are found.
+     */
+    protected function assertUniqueHeaders($header): void
     {
         if (count($header) != count(array_unique($header))) {
             $duplicates = array_keys(array_filter(array_count_values($header), function ($i) {
                 return $i > 1;
             }));
-            throw new \Exception("Duplicate headers error: " . implode(', ', $duplicates));
+            throw new \UnexpectedValueException("Duplicate headers error: " . implode(', ', $duplicates));
         }
     }
 
